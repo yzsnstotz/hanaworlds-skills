@@ -71,6 +71,11 @@ npm run lint:skills
 npm test
 ```
 
+Run `npm ci --ignore-scripts` again after updating the checkout's dependency
+lock; an older `node_modules` tree does not exercise the pinned Host supply.
+The repository's `.npmrc` selects a writable global cache under the current
+user's home for these commands without changing user-level npm configuration.
+
 `npm test` also includes `test/official-host.mjs`, a mandatory alpha.2 source
 mount gate. It packs this bundle, installs it through the published official
 plugin-manager operation into an independent temporary profile, and boots that
