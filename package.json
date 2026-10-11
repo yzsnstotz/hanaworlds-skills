@@ -35,9 +35,9 @@
     "@deepseek-ai/dsh-skill-filesystem": "^0.0.1-rc.3"
   },
   "devDependencies": {
-    "hanaworlds-contracts": "git+https://github.com/yzsnstotz/hanaworlds-contracts.git#v2.4.0",
+    "@deepseek-ai/cordis-plugin-include": "1.0.9",
     "@deepseek-ai/cordis-plugin-loader": "1.0.5",
-    "yaml": "2.9.1",
-    "@deepseek-ai/cordis-plugin-include": "1.0.9"
+    "hanaworlds-contracts": "git+https://github.com/yzsnstotz/hanaworlds-contracts.git#v2.6.0",
+    "yaml": "2.9.1"
   }
 }

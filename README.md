@@ -2,8 +2,9 @@
 
 HanaWorlds domain skill source (D-13). The installed bundle contains Markdown,
 its Cordis patch and package metadata; it registers no tools or runtime plugin code.
-Workshop and Painter own the seven tools declared by `hanaworlds-contracts@2.4.0`.
-The source dependency pins the published Git tag `v2.4.0` exactly.
+Workshop and Painter own the seven tools declared by `hanaworlds-contracts@2.6.0`.
+The source dependency pins the published Git tag `v2.6.0` exactly
+(commit `2d1c9bf31fb5bb9555befadea03d722705d5a8f5`).
 
 Install this package as a DSH profile bundle using the host's package manager.
 The one-line `cordis.patch.yml` inserts the unchanged upstream
@@ -16,13 +17,26 @@ The upstream provider resolves relative custom roots against process cwd;
 for an isolated installation test.
 
 The skill follows C-skill `skill/v1`: current turn text and image attachment
-references, with session/turn/world injected only by the host. It clarifies unclear
-requests, prepares clear designs, chooses declared write methods and awaits actual
-human confirmation before applying a host-held confirmed proposal. Geometry and
+references, with session/turn/world injected only by the host. A clear request
+(position, size and materials settled by the current message and runtime facts)
+is built directly with `hanaworlds_build` action `build` carrying only a neutral
+BUILD or REGION proposal; the host reads the current message and authorizes it.
+An unclear request goes back and forth through `hanaworlds_proposal` /
+`hanaworlds_region_proposal` and is applied only with the host-held confirmed
+proposal reference after the player confirms. Every published refusal of the
+direct build action has handling guidance. Geometry and
 material vocabulary come from current runtime facts. C-session and C-painter are
 consumed through published contracts, never through other plugin implementations.
 The authoritative examples and fixture-only mock are available from
-`hanaworlds-contracts/fixtures/skill-tools` and its root `createSkillToolsMock` export.
+`hanaworlds-contracts/fixtures/skill-tools`, `hanaworlds-contracts/fixtures/direct-build`
+and the root `createSkillToolsMock` export.
+
+`test/direct-build-consumer.mjs` is an independent consumer of the published
+direct-build contract: it checks the skill's direct examples against
+`ToolDirectBuildInput`, that forged confirmation/authorization/identity fields are
+rejected, that the skill names every refusal declared for the action, and runs the
+published fixture provider with and without independent host authorization.
+It is SOURCE/FIXTURE evidence only, not a running Workshop, model, world or UI.
 
 For source checks (Node.js 24 or newer):
 
@@ -49,10 +63,10 @@ Its host registry is simulated and watching is disabled. It proves installed
 skill discovery, not a running DSH/model/world/UI acceptance.
 
 Sources and licences: upstream filesystem provider 0.0.1-rc.3 (BSD-3-Clause),
-Cordis loader 1.0.5 and include 1.0.9 (MIT), YAML 2.9.1 (ISC), contracts 2.4.0
+Cordis loader 1.0.5 and include 1.0.9 (MIT), YAML 2.9.1 (ISC), contracts 2.6.0
 (MIT). Skill prose derives from Workshop main `0fb3fef83abd0177b13af4a881fcdb6ac0b6b159`
 `src/building-skill.mjs` (MIT), revised to the published neutral tool contracts.
 
 Upstream: https://github.com/deepseek-ai/deepseek-harness
 
-Contracts: https://github.com/yzsnstotz/hanaworlds-contracts/tree/v2.4.0
+Contracts: https://github.com/yzsnstotz/hanaworlds-contracts/tree/v2.6.0
