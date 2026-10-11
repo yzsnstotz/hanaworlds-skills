@@ -21,7 +21,8 @@ Host compatibility is limited to the two verified upstream supplies:
 0.2.0-rc.2) and **0.2.1-alpha.2** (Desktop's fixed upstream commit
 `d743267388641bc76f17c45ce8b4c231aed1d32c`). The peer declaration lists
 these exact prereleases; other versions require fresh verification. Development
-checks pin filesystem 0.2.0-rc.2. The installed bundle uses the host-supplied
+checks pin filesystem 0.2.1-alpha.2 and its official alpha Cordis loader/include
+supply. The installed bundle uses the host-supplied
 provider and contains no provider implementation.
 
 For an independent official-host check, set `DSH_HOME` to a disposable directory,
@@ -70,6 +71,19 @@ npm run lint:skills
 npm test
 ```
 
+`npm test` also includes `test/official-host.mjs`, a mandatory alpha.2 source
+mount gate. It packs this bundle, installs it through the published official
+plugin-manager operation into an independent temporary profile, and boots that
+profile with the official `@deepseek-ai/dsh/profile-boot` API. The profile mounts
+the official skill registry and this bundle only. The gate requires the same live
+registry's `snapshot`, `list` and `get` to discover the installed skill, report
+complete discovery and load exactly the shipped Markdown body. It does not mount
+a model, credentials service, world or application entry. An empty launch
+environment avoids the CLI's layered environment loading. DSH and pnpm are pinned
+development dependencies used only by this regression, not runtime bundle content.
+Set `HANA_SKILLS_TEST_DIR` to choose the temporary parent, and
+`HANA_SKILLS_KEEP_TEST_ROOT=1` to retain the profile, logs and live-catalog evidence.
+
 The linter reads `hanaworlds-contracts/tools` and `hanaworlds-contracts/skill`,
 checks every named tool, prose action, annotated input/output field path and JSON
 input example, and invokes the published strict validator for nested fields.
@@ -79,7 +93,7 @@ The linter does not prove semantic intent, material membership or live world saf
 those checks belong to the runtime providers.
 
 To verify the installation independently, pack and install the tarball in a
-separate consumer directory alongside filesystem 0.2.0-rc.2, then run the source test with
+separate consumer directory alongside filesystem 0.2.1-alpha.2, then run the source test with
 `HANA_SKILLS_INSTALL_ROOT=/absolute/consumer/root node --test test/installed-mount.mjs`.
 That test runs upstream patch insertion, loader expression interpolation and the
 installed filesystem provider's discovery/body loading from a different cwd.
@@ -87,7 +101,9 @@ Its host registry is simulated and watching is disabled. It proves installed
 skill discovery, not a running DSH/model/world/UI acceptance.
 
 Sources and licences: upstream filesystem providers 0.2.0-rc.2 and 0.2.1-alpha.2 (MIT),
-Cordis loader 1.0.5 and include 1.0.9 (MIT), YAML 2.9.1 (ISC), contracts 2.6.0
+Cordis loader 1.0.6-alpha.1 and include 1.0.10-alpha.1 (MIT), official DSH,
+app boot and plugin manager 0.2.1-alpha.2 (MIT), pnpm 10.23.0 (MIT),
+YAML 2.9.1 (ISC), contracts 2.6.0
 (MIT). Skill prose derives from Workshop main `0fb3fef83abd0177b13af4a881fcdb6ac0b6b159`
 `src/building-skill.mjs` (MIT), revised to the published neutral tool contracts.
 
