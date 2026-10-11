@@ -1,0 +1,43 @@
+{
+  "name": "hanaworlds-skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "HanaWorlds domain skills (D-13): engine-neutral SKILL.md bundles mounted into DSH through the upstream dsh-skill-filesystem customSkillDirs; no runtime plugin code",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yzsnstotz/hanaworlds-skills.git"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "skills/",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "lint:skills": "node tools/lint-skills.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill-filesystem": "^0.0.1-rc.3"
+  },
+  "devDependencies": {
+    "hanaworlds-contracts": "git+https://github.com/yzsnstotz/hanaworlds-contracts.git#v2.4.0",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.5",
+    "yaml": "2.9.1",
+    "@deepseek-ai/cordis-plugin-include": "1.0.9"
+  }
+}
