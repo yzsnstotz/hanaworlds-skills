@@ -43,6 +43,7 @@
     "@deepseek-ai/dsh": "0.2.1-alpha.2",
     "@deepseek-ai/dsh-app-boot": "0.2.1-alpha.2",
     "@deepseek-ai/dsh-plugin-manager": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-launch-environment": "0.2.1-alpha.2",
     "pnpm": "10.23.0"
   }
 }

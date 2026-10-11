@@ -79,7 +79,11 @@ the official skill registry and this bundle only. The gate requires the same liv
 registry's `snapshot`, `list` and `get` to discover the installed skill, report
 complete discovery and load exactly the shipped Markdown body. It does not mount
 a model, credentials service, world or application entry. An empty launch
-environment avoids the CLI's layered environment loading. DSH and pnpm are pinned
+snapshot from the public `createLaunchEnvironmentSnapshot([])` factory avoids
+the CLI's layered environment loading. Separate empty user/global npmrc files
+isolate package configuration. Child processes use the current supported Node
+executable and an explicit writable global npm cache; paths and versions are
+recorded in `runtime.json` and the Host evidence. DSH and pnpm are pinned
 development dependencies used only by this regression, not runtime bundle content.
 Set `HANA_SKILLS_TEST_DIR` to choose the temporary parent, and
 `HANA_SKILLS_KEEP_TEST_ROOT=1` to retain the profile, logs and live-catalog evidence.
@@ -102,7 +106,7 @@ skill discovery, not a running DSH/model/world/UI acceptance.
 
 Sources and licences: upstream filesystem providers 0.2.0-rc.2 and 0.2.1-alpha.2 (MIT),
 Cordis loader 1.0.6-alpha.1 and include 1.0.10-alpha.1 (MIT), official DSH,
-app boot and plugin manager 0.2.1-alpha.2 (MIT), pnpm 10.23.0 (MIT),
+app boot, plugin manager and launch environment 0.2.1-alpha.2 (MIT), pnpm 10.23.0 (MIT),
 YAML 2.9.1 (ISC), contracts 2.6.0
 (MIT). Skill prose derives from Workshop main `0fb3fef83abd0177b13af4a881fcdb6ac0b6b159`
 `src/building-skill.mjs` (MIT), revised to the published neutral tool contracts.
