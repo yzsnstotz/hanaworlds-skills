@@ -1,6 +1,6 @@
 {
   "name": "hanaworlds-skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -32,12 +32,13 @@
     "test": "node --test test/*.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-skill-filesystem": "^0.0.1-rc.3"
+    "@deepseek-ai/dsh-skill-filesystem": "0.2.0-rc.2 || 0.2.1-alpha.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis-plugin-include": "1.0.9",
     "@deepseek-ai/cordis-plugin-loader": "1.0.5",
     "hanaworlds-contracts": "git+https://github.com/yzsnstotz/hanaworlds-contracts.git#v2.6.0",
-    "yaml": "2.9.1"
+    "yaml": "2.9.1",
+    "@deepseek-ai/dsh-skill-filesystem": "0.2.0-rc.2"
   }
 }

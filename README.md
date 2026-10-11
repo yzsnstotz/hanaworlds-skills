@@ -16,6 +16,30 @@ The upstream provider resolves relative custom roots against process cwd;
 `./skills` would therefore be unsuitable. No home configuration changes are needed
 for an isolated installation test.
 
+Host compatibility is limited to the two verified upstream supplies:
+`@deepseek-ai/dsh-skill-filesystem` **0.2.0-rc.2** (official npm DSH
+0.2.0-rc.2) and **0.2.1-alpha.2** (Desktop's fixed upstream commit
+`d743267388641bc76f17c45ce8b4c231aed1d32c`). The peer declaration lists
+these exact prereleases; other versions require fresh verification. Development
+checks pin filesystem 0.2.0-rc.2. The installed bundle uses the host-supplied
+provider and contains no provider implementation.
+
+For an independent official-host check, set `DSH_HOME` to a disposable directory,
+then run `dsh plugin --profile skills-compat add /absolute/hanaworlds-skills-0.1.1.tgz`.
+The normal manager enables the bundle in `dsh.profile.bundles`; boot that profile
+through DSH. Its real `ctx.skills.list()` / `get('hanaworlds-building')` must
+return provider `hanaworlds-skills` and the installed package's absolute skill
+path. The manager's pnpm subprocess may report a missing filesystem peer because
+it is supplied by the host installation. DSH's runtime resolution must resolve
+that peer to the matching host package; this warning alone proves neither a
+failure nor successful mounting. Do not install an extra provider or grant a
+version exemption to silence it.
+
+The compatibility repair was checked through normal plugin-manager installation
+and real DSH profile boot on both supplies, with the upstream filesystem and
+registry enabled, from a cwd outside the source package. This verifies installation,
+activation and skill loading; it does not verify model execution or world behavior.
+
 The skill follows C-skill `skill/v1`: current turn text and image attachment
 references, with session/turn/world injected only by the host. A clear request
 (position, size and materials settled by the current message and runtime facts)
@@ -55,14 +79,14 @@ The linter does not prove semantic intent, material membership or live world saf
 those checks belong to the runtime providers.
 
 To verify the installation independently, pack and install the tarball in a
-separate consumer directory, then run the source test with
+separate consumer directory alongside filesystem 0.2.0-rc.2, then run the source test with
 `HANA_SKILLS_INSTALL_ROOT=/absolute/consumer/root node --test test/installed-mount.mjs`.
 That test runs upstream patch insertion, loader expression interpolation and the
 installed filesystem provider's discovery/body loading from a different cwd.
 Its host registry is simulated and watching is disabled. It proves installed
 skill discovery, not a running DSH/model/world/UI acceptance.
 
-Sources and licences: upstream filesystem provider 0.0.1-rc.3 (BSD-3-Clause),
+Sources and licences: upstream filesystem providers 0.2.0-rc.2 and 0.2.1-alpha.2 (MIT),
 Cordis loader 1.0.5 and include 1.0.9 (MIT), YAML 2.9.1 (ISC), contracts 2.6.0
 (MIT). Skill prose derives from Workshop main `0fb3fef83abd0177b13af4a881fcdb6ac0b6b159`
 `src/building-skill.mjs` (MIT), revised to the published neutral tool contracts.
