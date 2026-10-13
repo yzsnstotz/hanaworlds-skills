@@ -1,171 +1,126 @@
-// Observer only: installs this package and the declared product peers into an
-// isolated official DSH profile through the normal plugin manager, boots it,
-// and records what the live catalog, live tool registry and the peers' public
-// entries report. It judges nothing; run.mjs asserts on the recorded evidence.
-// No model, credentials, hand-made Session, Agent or ToolRunContext.
-import { readFile, writeFile } from 'node:fs/promises';
+// Observer only: installs this package and the pinned peers into an isolated
+// official DSH profile through the normal plugin manager, boots it, and records
+// what the live catalog, live tool registry and published services report.
+// It judges nothing; run.mjs asserts on evidence.json.
+// No model, credentials, hand-made Session, Agent or ToolRunContext, and no
+// guessed method names: a surface is called only once its provider published it.
+import { createHash } from 'node:crypto';
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { dirname, join, relative } from 'node:path';
 import { initProfile, resolveProfileDir } from '@deepseek-ai/dsh-app-boot';
 import { INSTALL_ANCHOR, runProfile } from '@deepseek-ai/dsh/profile-boot';
 import { runPluginCommand } from '@deepseek-ai/dsh-plugin-manager/operations';
 import { createLaunchEnvironmentSnapshot } from '@deepseek-ai/dsh-launch-environment';
 
-const [root, tarball, peersFile] = process.argv.slice(2);
+const [root, tarball] = process.argv.slice(2);
 const require = createRequire(import.meta.url);
-const evidence = { peers: null, gaps: [], installs: [], catalog: null, registry: null, creationFacts: [], affected: null };
+const read = async name => JSON.parse(await readFile(new URL(`./${name}`, import.meta.url), 'utf8'));
+const { peers, worldSource } = await read('peers.json');
+const corpus = (await read('creation-facts-corpus.json')).values;
+const evidence = { gaps: [], installs: [], catalog: null, registry: null, services: {}, lifecycle: [], creationFacts: [], sessionEntry: null };
 const save = () => writeFile(join(root, 'evidence.json'), JSON.stringify(evidence, null, 2) + '\n');
-const corpus = JSON.parse(await readFile(new URL('./creation-facts-corpus.json', import.meta.url), 'utf8')).values;
 
-// Peer install sources and public entry names are published by each provider
-// (C-skill skills-03 §5 R-5) and pinned in the repository's product-peers.json.
-const ENTRY = {
-  'C-session': ['openSession', 'appendUserTurn', 'executeTool', 'confirmProposal', 'setPlacement',
-    'recordContinueDecision', 'listSessions', 'readUndoStatus', 'listObjects'],
-  'C-world-lifecycle': ['create', 'list', 'launch', 'stop'],
-};
-let peers = {};
-try { peers = JSON.parse(await readFile(peersFile, 'utf8')); evidence.peers = peers; }
-catch (error) { evidence.gaps.push(`product-peers.json unreadable: ${error.code || error.message}`); }
-for (const contract of ['C-session', 'C-painter', 'C-world-lifecycle', 'C-local-worlds']) {
-  if (!peers[contract]?.install) evidence.gaps.push(`${contract}: provider has not published an install source`);
-  for (const name of ENTRY[contract] || []) {
-    if (!peers[contract]?.entry?.service || !peers[contract]?.entry?.[name]) evidence.gaps.push(`${contract}: public entry ${name} not published`);
+// Independent observation of every durable and native effect inside the test root:
+// files (world, journal and session persistence all live under it) and processes.
+async function tree(dir, out = {}) {
+  for (const item of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    const path = join(dir, item.name);
+    if (item.name === 'node_modules' || path.endsWith('evidence.json') || path.endsWith('.log')) continue;
+    if (item.isDirectory()) await tree(path, out);
+    else if (item.isFile()) out[relative(root, path)] = createHash('sha256').update(await readFile(path)).digest('hex') + ':' + (await stat(path)).size;
   }
+  return out;
 }
-if (!peers['C-local-worlds']?.entryId) evidence.gaps.push('C-local-worlds: Loader entry id for localSourceCreationMaterials not published');
+const processes = () => spawnSync('ps', ['-axo', 'pid=,command='], { encoding: 'utf8' }).stdout
+  .split('\n').filter(line => line.includes(root) && !line.includes('host.mjs') && !line.includes(' ps ')).map(line => line.trim().replace(/^\d+\s+/, '')).sort();
+const observe = async () => ({ files: await tree(root), processes: processes() });
 
 const profileName = 'skills-source-product';
 const profileDir = resolveProfileDir(profileName, process.env.DSH_HOME);
 const pnpmBin = join(dirname(require.resolve('pnpm')), require('pnpm').bin.pnpm);
 initProfile(profileDir, []);
-// World-source creation materials are trusted profile configuration (C-local-worlds
-// localSourceCreationMaterials), never a create argument or user input.
-const materials = corpus.map((creationFacts, i) => ({ templateId: `skills-cf-${String(i).padStart(2, '0')}`,
-  displayName: `skills cf ${i}`, description: 'skills-03 creationFacts fidelity corpus', creationFacts }));
 const patch = ["- insert: [{ id: skills, name: '@deepseek-ai/dsh-skill' }]"];
-if (peers['C-local-worlds']?.entryId) {
-  const base = JSON.parse(JSON.stringify(peers['C-local-worlds'].baseConfig || {}).replaceAll('${TEST_ROOT}', root));
-  patch.push(`- ${JSON.stringify({ id: peers['C-local-worlds'].entryId, config: { ...base, localSourceCreationMaterials: materials } })}`);
-}
+if (worldSource?.entryId) {
+  const materials = corpus.map((creationFacts, i) => ({ templateId: `skills-cf-${String(i).padStart(2, '0')}`,
+    displayName: `skills cf ${i}`, description: 'skills-03 creationFacts fidelity corpus', creationFacts }));
+  patch.push(`- ${JSON.stringify({ id: worldSource.entryId, config: { ...worldSource.baseConfig, localSourceCreationMaterials: materials } })}`);
+} else evidence.gaps.push('world source: no engine-neutral supply handle and Loader entry id (requested from PM); creationFacts corpus cannot be configured');
 await writeFile(join(profileDir, 'cordis.patch.yml'), patch.join('\n') + '\n');
-const sources = [tarball, ...['C-session', 'C-painter', 'C-world-lifecycle', 'C-local-worlds']
-  .map(k => peers[k]?.install).filter(Boolean)];
-for (const source of [...new Set(sources)]) {
+for (const source of [tarball, ...peers.map(p => p.source), ...(worldSource?.source ? [worldSource.source] : [])]) {
   const installed = await runPluginCommand({ profile: profileName, dir: profileDir, installAnchor: INSTALL_ANCHOR,
     cwd: process.cwd(), home: process.env.DSH_HOME }, ['add', source], { command: process.execPath, args: [pnpmBin],
     env: process.env, execution: 'service', outputBytes: 65536, onOutput: text => process.stdout.write(text) });
   evidence.installs.push({ source, exitCode: installed.exitCode, timedOut: installed.timedOut ?? false, logPath: installed.logPath });
 }
+const manifest = JSON.parse(await readFile(join(profileDir, 'package.json'), 'utf8'));
+evidence.bundles = manifest.dsh?.profile?.bundles ?? [];
+// Which DSH package versions the assembled profile actually resolves (version skew is a real supply fault).
+const profileRequire = createRequire(join(profileDir, 'package.json'));
+evidence.resolved = Object.fromEntries(['@deepseek-ai/dsh-skill', '@deepseek-ai/dsh-tools', '@deepseek-ai/dsh-session'].map(name => {
+  try { return [name, JSON.parse(readFileSync(profileRequire.resolve(`${name}/package.json`), 'utf8')).version]; } catch { return [name, null]; }
+}));
+evidence.host = require('@deepseek-ai/dsh/package.json').version;
 await save();
 
 const { ctx, shutdown } = await runProfile({ profile: profileName,
   environment: createLaunchEnvironmentSnapshot([]), patchFiles: [], args: [] });
 try {
-  const loaded = await ctx.skills.get('hanaworlds-building', { cwd: process.cwd() });
+  const skills = ctx.get('skills');
+  if (!skills) evidence.gaps.push('live skill registry (ctx.skills) did not activate in the assembled profile');
+  const loaded = skills ? await skills.get('hanaworlds-building', { cwd: process.cwd() }) : null;
   evidence.catalog = loaded ? { provider: loaded.provider, path: loaded.path, content: loaded.content } : null;
-  const names = [...new Set((loaded?.content || '').match(/hanaworlds_[A-Za-z0-9_]+/g) || [])].sort();
-  // The live registry is the provider's own published shape, not a contracts package copy.
   const tools = ctx.get('tools');
-  if (!tools) evidence.gaps.push('live tool registry (ctx.tools) is not mounted by any installed peer');
-  evidence.registry = tools && Object.fromEntries(names.map(name => {
+  const names = [...new Set((loaded?.content || '').match(/hanaworlds_[A-Za-z0-9_]+/g) || [])].sort();
+  evidence.registry = tools ? Object.fromEntries(names.map(name => {
     const def = tools.get(name);
     return [name, def ? { parameters: def.parameters, output: def.output?.schema ?? null } : null];
-  }));
+  })) : null;
+  if (!tools) evidence.gaps.push('live tool registry (ctx.tools) is not mounted by the installed peers');
+  for (const key of ['hanaworldsWorldLifecycle']) evidence.services[key] = Boolean(ctx.get(key));
   await save();
 
-  const session = peers['C-session']?.entry, life = peers['C-world-lifecycle']?.entry;
-  const missing = evidence.gaps.length > 0;
-  if (!missing) {
-    const S = ctx.get(session.service), L = ctx.get(life.service);
-    const call = (svc, entry, name, input) => svc[entry[name]](input);
-    const settle = async fn => { try { return { value: await fn() }; } catch (error) { return { thrown: { name: error.name, code: error.code ?? null, message: String(error.message) } }; } };
-    const tool = async (sessionRef, name, args) => {
-      const result = await call(S, session, 'executeTool', { sessionRef, name, arguments: args });
-      return result.isError ? { isError: true, error: result.error } : { isError: false, value: result.value };
-    };
-    const observe = async sessionRef => ({ sessions: await call(S, session, 'listSessions', {}),
-      worlds: await call(L, life, 'list', {}), undo: sessionRef ? await call(S, session, 'readUndoStatus', { sessionRef }) : null });
-
+  // World lifecycle v2: receiver-bound calls, full envelope, correlation checked, result unwrapped.
+  const lifecycle = ctx.get('hanaworldsWorldLifecycle');
+  let seq = 0;
+  const lc = async (op, input) => {
+    const request = { contractVersion: 'world-lifecycle/v2', requestId: `skills03-${op}-${++seq}`, ...input };
+    const record = { op, request };
+    try { record.response = await lifecycle[op](request); }
+    catch (error) { record.rejected = { name: error?.name, contractVersion: error?.contractVersion, requestId: error?.requestId, publicError: error?.publicError ?? null }; }
+    const r = record.response;
+    record.correlated = Boolean(r && r.contractVersion === request.contractVersion && r.requestId === request.requestId);
+    record.result = record.correlated && !r.error && !r.publicError ? r.result : null;
+    evidence.lifecycle.push(record);
+    return record.result;
+  };
+  if (lifecycle && worldSource?.entryId) {
     for (const [i, expected] of corpus.entries()) {
-      const templateId = materials[i].templateId;
-      const row = { templateId, expected, steps: {} };
-      row.steps.worldsBefore = await settle(() => call(L, life, 'list', {}));
-      row.steps.create = await settle(() => call(L, life, 'create', { templateId, displayName: materials[i].displayName }));
-      const worldRef = row.steps.create.value?.worldRef;
-      if (worldRef) {
-        row.steps.launch = await settle(() => call(L, life, 'launch', { worldRef }));
-        row.steps.open = await settle(() => call(S, session, 'openSession', { worldRef }));
-        const sessionRef = row.steps.open.value?.sessionRef;
-        if (sessionRef) {
-          row.steps.before = await settle(() => observe(sessionRef));
-          row.steps.context = await settle(() => tool(sessionRef, 'hanaworlds_context', { action: 'read' }));
-          row.steps.after = await settle(() => observe(sessionRef));
-        }
-        row.steps.stop = await settle(() => call(L, life, 'stop', { worldRef }));
+      const row = { templateId: `skills-cf-${String(i).padStart(2, '0')}`, expected };
+      row.before = await observe();
+      row.worldsBefore = (await lc('list', {}))?.worlds ?? null;
+      row.created = await lc('create', { templateId: row.templateId, displayName: `skills cf ${i}` });
+      row.worldsAfter = (await lc('list', {}))?.worlds ?? null;
+      if (row.created?.worldId) {
+        row.launched = await lc('launch', { worldId: row.created.worldId });
+        row.afterLaunch = await observe();
+        // The skill-boundary read (hanaworlds_context in a real Workshop session) runs here once
+        // C-session publishes a session entry (R-5); until then nothing is called in its place.
+        row.skillBoundary = null;
+        row.afterSkillBoundary = await observe();
+        if (row.launched?.connectionRef) row.stopped = await lc('stop', { connectionRef: row.launched.connectionRef });
       }
       evidence.creationFacts.push(row);
       await save();
     }
-
-    // Affected objects: A is built through the agreement path; B digs A's cell.
-    const a = evidence.affected = { steps: {} };
-    a.steps.create = await settle(() => call(L, life, 'create', { templateId: 'flat', displayName: 'skills affected' }));
-    const worldRef = a.steps.create.value?.worldRef;
-    if (worldRef) {
-      a.steps.launch = await settle(() => call(L, life, 'launch', { worldRef }));
-      a.steps.open = await settle(() => call(S, session, 'openSession', { worldRef }));
-      const sessionRef = a.steps.open.value?.sessionRef;
-      if (sessionRef) {
-        const turn = text => settle(() => call(S, session, 'appendUserTurn', { sessionRef, text }));
-        a.steps.placementTurn = await turn('在我选中的这一格放一块，叫小塔');
-        a.steps.placement = await settle(() => call(S, session, 'setPlacement', { sessionRef, cells: 1 }));
-        a.steps.context = await settle(() => tool(sessionRef, 'hanaworlds_context', { action: 'read' }));
-        const facts = a.steps.context.value?.value;
-        const min = facts?.placementTarget?.bounds?.min ?? facts?.placementTarget?.cells?.[0];
-        const emptyRef = facts?.catalogueFacts?.catalogue?.emptyMaterialRef;
-        const solid = Object.keys(facts?.catalogueFacts?.presentation || {}).sort().find(ref => ref !== emptyRef);
-        const region = materialRef => ({ decision: 'REGION', block: { profileVersion: 'region-voxels/v2', geometryProfile: 'voxel-grid/v1',
-          origin: min, size: [1, 1, 1], indexOrder: 'X_FASTEST_THEN_Y_THEN_Z', palette: [{ materialRef, orientation: 0 }], runs: [[1, 0]] } });
-        a.steps.objectsBefore = await settle(() => call(S, session, 'listObjects', { sessionRef }));
-        a.steps.proposeA = await settle(() => tool(sessionRef, 'hanaworlds_region_proposal', { action: 'validate', proposal: region(solid) }));
-        const refA = a.steps.proposeA.value?.value?.proposalRef;
-        a.steps.confirmA = await settle(() => call(S, session, 'confirmProposal', { sessionRef, proposalRef: refA }));
-        a.steps.applyA = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'apply', confirmedProposalRef: a.steps.confirmA.value?.confirmedProposalRef }));
-        a.steps.objectsWithA = await settle(() => call(S, session, 'listObjects', { sessionRef }));
-        a.steps.digTurn = await turn('把那一格挖掉');
-        a.steps.beforeDig = await settle(() => observe(sessionRef));
-        a.steps.directDig = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'build', proposal: region(emptyRef) }));
-        a.steps.afterDirectDig = await settle(() => observe(sessionRef));
-        a.steps.proposeDig = await settle(() => tool(sessionRef, 'hanaworlds_region_proposal', { action: 'validate', proposal: region(emptyRef) }));
-        a.steps.confirmDig = await settle(() => call(S, session, 'confirmProposal', { sessionRef, proposalRef: a.steps.proposeDig.value?.value?.proposalRef }));
-        a.steps.applyDig = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'apply', confirmedProposalRef: a.steps.confirmDig.value?.confirmedProposalRef }));
-        a.steps.afterApplyDig = await settle(() => observe(sessionRef));
-        // Continue without any current-turn decision: refused, nothing written.
-        a.steps.continueUndecided = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'continue' }));
-        // Model-forged consent fields: the live schema and the executor must both refuse.
-        a.steps.continueForged = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'continue', confirmed: true, affectedObjectRefs: ['forged'] }));
-        a.steps.afterRefusals = await settle(() => observe(sessionRef));
-        // A decision recorded in an earlier turn does not cover a newer turn.
-        a.steps.staleTurn = await turn('继续，可以改动小塔');
-        a.steps.staleDecision = await settle(() => call(S, session, 'recordContinueDecision', { sessionRef }));
-        a.steps.newerTurn = await turn('等一下，先别动');
-        a.steps.continueStale = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'continue' }));
-        a.steps.afterStale = await settle(() => observe(sessionRef));
-        // The player's current action authorizes exactly the reported objects.
-        a.steps.currentTurn = await turn('继续，可以改动小塔');
-        a.steps.currentDecision = await settle(() => call(S, session, 'recordContinueDecision', { sessionRef }));
-        a.steps.continueCurrent = await settle(() => tool(sessionRef, 'hanaworlds_build', { action: 'continue' }));
-        a.steps.afterContinue = await settle(() => observe(sessionRef));
-        a.steps.objectsAfter = await settle(() => call(S, session, 'listObjects', { sessionRef }));
-      }
-      a.steps.stop = await settle(() => call(L, life, 'stop', { worldRef }));
-    }
-    await save();
   }
+  evidence.sessionEntry = null;
+  evidence.gaps.push('C-session: no published real-session tool entry (R-5); tool and skill-sample scenarios are not executed');
 } finally {
   await save();
   await shutdown.shutdown(0);
   await writeFile(join(root, 'host-lifecycle.json'), JSON.stringify({ pid: process.pid, profileDir,
-    stop: { stoppedAt: new Date().toISOString(), method: 'await shutdown.shutdown(0)' } }, null, 2) + '\n');
+    stop: { stoppedAt: new Date().toISOString(), method: 'await shutdown.shutdown(0)' }, processesAfter: processes() }, null, 2) + '\n');
 }

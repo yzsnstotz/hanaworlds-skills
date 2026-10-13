@@ -1,6 +1,6 @@
-// skills-03 product test: the installed skill against the installed peers'
-// real public tools (C-skill skills-03 §2–§5). Run: node test/skill-source-product/run.mjs
-// Stays red, naming each gap, until the peers publish what C-skill §3–§5 needs.
+// skills-03 product test: the installed skill, consumed by the installed peers'
+// real public surfaces (C-skill skills-03). Run: node test/skill-source-product/run.mjs
+// Red until the peers publish what the C-session supplier request (R-1..R-5) asks for.
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { delimiter, dirname, join, resolve } from 'node:path';
@@ -9,8 +9,16 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { validateJsonSchemaValue } from '@deepseek-ai/dsh-tools';
+import { validate } from './schema.mjs';
 
+const here = name => new URL(`./${name}`, import.meta.url);
 const sourceRoot = fileURLToPath(new URL('../..', import.meta.url));
+const json = async name => JSON.parse(await readFile(here(name), 'utf8'));
+const structure = await json('c-skill.schema.json');
+const { samples } = await json('c-skill-samples.json');
+const corpus = (await json('creation-facts-corpus.json')).values;
+const { peers } = await json('peers.json');
+
 const root = await mkdtemp(join(process.env.HANA_SKILLS_TEST_DIR || tmpdir(), 'skills-source-product-'));
 const npmCli = await realpath(join(dirname(process.execPath), 'npm'));
 const cache = resolve(process.env.npm_config_cache || join(homedir(), '.cache/npm'));
@@ -23,8 +31,8 @@ const env = { PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH}
 const packed = spawnSync(process.execPath, [npmCli, 'pack', '--json', '--pack-destination', root], { cwd: sourceRoot, env, encoding: 'utf8' });
 assert.equal(packed.status, 0, packed.stderr);
 const [{ filename }] = JSON.parse(packed.stdout);
-const host = spawnSync(process.execPath, [fileURLToPath(new URL('./host.mjs', import.meta.url)), root, join(root, filename),
-  join(sourceRoot, 'product-peers.json')], { cwd: join(root, 'outside-cwd'), env, encoding: 'utf8' });
+const host = spawnSync(process.execPath, [fileURLToPath(here('host.mjs')), root, join(root, filename)],
+  { cwd: join(root, 'outside-cwd'), env, encoding: 'utf8', maxBuffer: 1 << 28 });
 await writeFile(join(root, 'host.log'), host.stdout + host.stderr);
 let ev = {};
 try { ev = JSON.parse(await readFile(join(root, 'evidence.json'), 'utf8')); } catch {}
@@ -36,18 +44,24 @@ const content = ev.catalog?.content || '';
 const examples = [...content.matchAll(/```json tool=(hanaworlds_[A-Za-z0-9_]+)\s*\n([\s\S]*?)\n```/g)].map(([, tool, body]) => ({ tool, input: JSON.parse(body) }));
 const canon = v => JSON.stringify(v, (k, x) => x && typeof x === 'object' && !Array.isArray(x)
   ? Object.fromEntries(Object.keys(x).sort().map(key => [key, x[key]])) : x);
-const ok = step => step && !step.thrown && step.value && step.value.isError !== true;
-const body = step => step?.value?.value;
 const fieldPath = (schema, path) => path.split('.').reduce((nodes, key) => nodes.flatMap(function expand(n) {
   if (!n || typeof n !== 'object') return [];
-  const alts = n.oneOf || n.anyOf || n.allOf;
-  return alts ? alts.flatMap(expand) : n.properties?.[key] ? [n.properties[key]] : [];
+  return n.oneOf ? n.oneOf.flatMap(expand) : n.properties?.[key] ? [n.properties[key]] : [];
 }), [schema]).length > 0;
+const live = tool => { assert.ok(ev.registry?.[tool]?.parameters, `${tool} is not registered in the live tool registry`); return ev.registry[tool]; };
+const gapText = () => (ev.gaps || []).join('\n');
 
-test('product peers are declared and installed by the normal plugin manager', () => {
+test('peers are supplied by the normal plugin manager from their pinned published commits', () => {
   assert.equal(host.status, 0, `host exited ${host.status}; see ${join(root, 'host.log')}`);
-  assert.deepEqual(ev.gaps, [], `peer gaps (C-skill skills-03 §5 R-5):\n${(ev.gaps || []).join('\n')}`);
+  assert.deepEqual((ev.installs || []).map(i => i.source).slice(1), peers.map(p => p.source));
   for (const install of ev.installs) assert.equal(install.exitCode, 0, `install failed: ${install.source}`);
+});
+
+test('the assembled profile activates every entry on the official host', async () => {
+  const log = await readFile(join(root, 'host.log'), 'utf8');
+  assert.doesNotMatch(log, /disabling profile plugin row|did not activate/, 'an installed entry was disabled; see host.log');
+  for (const [name, version] of Object.entries(ev.resolved || {})) assert.equal(version, ev.host, `${name} resolves ${version} in the profile, host is ${ev.host}`);
+  assert.equal(ev.services?.hanaworldsWorldLifecycle, true, 'published world lifecycle service is not provided by the installed peers');
 });
 
 test('the installed skill is served by the live catalog', () => {
@@ -55,117 +69,119 @@ test('the installed skill is served by the live catalog', () => {
   assert.ok(content.length > 0);
 });
 
-test('every tool the loaded skill names is registered live with its published schemas', () => {
+test('every tool the loaded skill names is registered live by the installed peers', () => {
   for (const name of TOOLS) {
     assert.ok(content.includes(name), `skill does not name ${name}`);
-    assert.ok(ev.registry?.[name], `${name} is not registered in the live tool registry`);
-    assert.ok(ev.registry[name].output, `${name} has no live output schema`);
+    assert.ok(live(name).output, `${name} has no live output schema`);
   }
-  assert.deepEqual(Object.keys(ev.registry || {}).sort(), TOOLS, 'skill names a tool outside the seven');
+  assert.deepEqual(Object.keys(ev.registry).sort(), TOOLS, 'skill names a tool outside the seven');
 });
 
 test('every input example in the loaded skill is accepted by the live tool schema', () => {
   assert.ok(examples.length > 0);
-  for (const { tool, input } of examples) {
-    assert.ok(ev.registry?.[tool]?.parameters, `${tool} has no live input schema`);
-    assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].parameters, input), [], `${tool} rejects ${JSON.stringify(input)}`);
-  }
+  for (const { tool, input } of examples) assert.deepEqual(validateJsonSchemaValue(live(tool).parameters, input), [], `${tool} rejects ${JSON.stringify(input)}`);
 });
 
 test('every output field the loaded skill reads exists in the live output schema', () => {
   const refs = [...content.matchAll(/`(hanaworlds_[A-Za-z0-9_]+)\.output\.([A-Za-z0-9_.]+)`/g)];
   assert.ok(refs.length > 0);
-  for (const [, tool, path] of refs) assert.ok(fieldPath(ev.registry?.[tool]?.output, path), `${tool}.output.${path} not in live schema`);
+  for (const [, tool, path] of refs) assert.ok(fieldPath(live(tool).output, path), `${tool}.output.${path} not in live schema`);
 });
 
-test('the skill reads affected objects and creation facts only from declared fields and continues only via the continue action', () => {
-  assert.match(content, /`hanaworlds_build\.output\.affectedObjects`/, 'skill must name affected objects from the tool output');
-  assert.match(content, /```json tool=hanaworlds_build\s*\n\{"action":"continue"\}\n```/, 'continue example must carry only the action');
-  assert.match(content, /`hanaworlds_context\.output\.worldCreation`/, 'skill must read creation facts from the declared field');
+test('the loaded skill grounds affected objects and creation facts in published fields only', () => {
+  assert.ok(fieldPath(live('hanaworlds_build').output, 'affectedObjects'), 'C-session has not published affectedObjects (R-1)');
+  assert.ok(fieldPath(live('hanaworlds_context').output, 'worldCreation'), 'C-session has not published worldCreation (R-4)');
+  assert.match(content, /`hanaworlds_build\.output\.affectedObjects`/);
+  assert.match(content, /`hanaworlds_context\.output\.worldCreation`/);
   assert.doesNotMatch(content, /Stop, say which, and ask the player/, 'ungrounded "say which" must be replaced');
 });
 
-// C-skill skills-03 §8: every published sample, compared through the installed plugin.
-const samples = JSON.parse(await readFile(new URL('./c-skill-samples.json', import.meta.url), 'utf8')).samples;
-const skillCalls = samples.flatMap(s => s.items).filter(i => i?.contractVersion === 'skill/v1' && i.result?.kind === 'tool_call').map(i => i.result.call);
-const toolExchanges = samples.filter(s => s.items.length === 2 && s.items[0]?.contractVersion === 'session/v5');
-
-test('every C-skill tool_call sample is documented by the loaded skill and accepted by the live tool', () => {
-  assert.equal(samples.length, 62);
-  assert.ok(skillCalls.length >= 13);
-  for (const { tool, input } of skillCalls) {
-    assert.ok(examples.some(e => e.tool === tool && e.input.action === input.action), `loaded skill has no ${tool} ${input.action} example`);
-    assert.ok(ev.registry?.[tool]?.parameters, `${tool} has no live input schema`);
-    assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].parameters, input), [], `${tool} rejects sample ${JSON.stringify(input)}`);
-  }
-});
-
-test('every C-skill tool response sample the skill consumes matches the live output schema', () => {
-  assert.equal(toolExchanges.length, 27);
-  assert.deepEqual([...new Set(toolExchanges.map(s => s.title.split(' ')[0]))].sort(), ['hanaworlds_build', 'hanaworlds_context']);
-  for (const { id, title, items: [request, response] } of toolExchanges) {
-    const tool = title.split(' ')[0];
-    assert.ok(ev.registry?.[tool]?.parameters, `${id}: ${tool} not registered live`);
-    assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].parameters, request.input), [], `${id}: live tool rejects ${JSON.stringify(request.input)}`);
-    if (response.result) assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].output, response.result), [], `${id}: live output schema rejects the sample result`);
-    if (response.affectedObjects) assert.ok(fieldPath(ev.registry[tool].output, 'affectedObjects'), `${id}: live output does not carry affectedObjects`);
-  }
-});
-
-test('model-forged consent on continue is refused by the live schema', () => {
-  const params = ev.registry?.hanaworlds_build?.parameters;
-  assert.ok(params, 'hanaworlds_build is not registered in the live tool registry');
-  assert.deepEqual(validateJsonSchemaValue(params, { action: 'continue' }), [], 'continue must be a declared input');
+test('continue is a declared live input and model-forged consent is refused', () => {
+  const params = live('hanaworlds_build').parameters;
+  assert.deepEqual(validateJsonSchemaValue(params, { action: 'continue' }), [], 'C-session has not published action continue (R-2)');
   for (const forged of [{ confirmed: true }, { affectedObjectRefs: ['x'] }, { confirmedProposalRef: 'x' }, { sessionRef: 'x' }, { turnRevision: 'x' }]) {
     assert.notDeepEqual(validateJsonSchemaValue(params, { action: 'continue', ...forged }), [], `continue accepts ${Object.keys(forged)}`);
   }
+  assert.match(content, /```json tool=hanaworlds_build\s*\n\{"action":"continue"\}\n```/, 'skill continue example must carry only the action');
 });
 
-test('creationFacts of every JSON root form reach hanaworlds_context unchanged with zero extra side effects', () => {
-  assert.equal(ev.creationFacts?.length, 13, 'corpus was not executed through the public entries');
+test('every C-skill sample matches the local C-skill structure, and malformed ones do not', () => {
+  assert.equal(samples.length, 33);
+  for (const s of samples) {
+    assert.deepEqual(validate(structure.request, s.request), [], `${s.id} request`);
+    assert.deepEqual(validate(structure.response, s.response), [], `${s.id} response`);
+    assert.equal(s.response.requestId, s.request.requestId, `${s.id} correlation`);
+    assert.ok((s.response.result === null) !== (s.response.error === null), `${s.id}: exactly one of result and error`);
+  }
+  const base = samples[0];
+  assert.notDeepEqual(validate(structure.response, { ...base.response, extra: 1 }), []);
+  assert.notDeepEqual(validate(structure.request, { ...base.request, hostContext: { ...base.request.hostContext, sessionRef: undefined } }), []);
+  assert.notDeepEqual(validate(structure.response, { ...base.response, result: { kind: 'reply', text: 't', worldCreation: { creationFacts: 1, x: 1 } } }), []);
+  assert.deepEqual([...new Set(samples.map(s => s.response.result?.kind ?? 'error'))].sort(), ['clarification', 'error', 'proposal', 'reply', 'tool_call']);
+});
+
+test('every C-skill tool_call sample is documented by the loaded skill and accepted by the live tool', () => {
+  const calls = samples.filter(s => s.response.result?.kind === 'tool_call').map(s => s.response.result.call);
+  assert.equal(calls.length, 12);
+  for (const { tool, input } of calls) {
+    assert.ok(examples.some(e => e.tool === tool && e.input.action === input.action), `loaded skill has no ${tool} ${input.action} example`);
+    assert.deepEqual(validateJsonSchemaValue(live(tool).parameters, input), [], `${tool} rejects ${JSON.stringify(input)}`);
+  }
+});
+
+test('every C-skill sample is grounded by its real run through a published Workshop session entry', () => {
+  assert.ok(ev.sessionEntry, `no real session entry was available:\n${gapText()}`);
+  for (const s of samples) {
+    const g = ev.grounding?.[s.id];
+    assert.ok(g, `${s.id}: grounding run missing`);
+    if (s.grounding.kind === 'execute') {
+      const outcome = g.isError ? g.error?.code : g.value?.error?.code ?? (s.grounding.expect === 'pending' ? (g.value?.result?.confirmed === false ? 'pending' : 'not-pending') : 'success');
+      assert.equal(outcome, s.grounding.expect, `${s.id}: ${JSON.stringify(g)}`);
+    }
+    if (s.grounding.kind === 'affected') {
+      const names = (g.value?.affectedObjects || []).map(o => o.displayName);
+      if (s.grounding.expect === 'names') for (const name of s.grounding.names) assert.ok(names.includes(name) && s.response.result.question.includes(name), `${s.id}: ${name} not reported by the tool`);
+      else assert.equal(g.value?.affectedObjects, undefined, `${s.id}: list unexpectedly present`);
+    }
+    if (s.grounding.kind === 'creation') {
+      const expected = s.grounding.corpusIndex === null ? null : { creationFacts: corpus[s.grounding.corpusIndex] };
+      assert.equal(canon(g.value?.result?.worldCreation), canon(expected), `${s.id}: tool worldCreation differs`);
+      assert.equal(canon(s.response.result.worldCreation), canon(expected), `${s.id}: sample reply differs`);
+    }
+  }
+});
+
+test('creationFacts: lifecycle v2 consumed correctly, values verbatim, zero extra world/journal/native/session effects', () => {
+  assert.equal(ev.creationFacts?.length, corpus.length, `corpus not executed:\n${gapText()}`);
+  for (const record of ev.lifecycle) {
+    assert.equal(record.request.contractVersion, 'world-lifecycle/v2');
+    assert.ok(record.correlated, `${record.request.requestId}: response not correlated ${JSON.stringify(record.response ?? record.rejected)}`);
+  }
   for (const row of ev.creationFacts) {
-    const s = row.steps;
-    assert.ok(s.create?.value?.worldRef, `${row.templateId}: create failed ${JSON.stringify(s.create)}`);
-    assert.equal(canon(s.create.value.creationFacts), canon(row.expected), `${row.templateId}: runtime create changed creationFacts`);
-    assert.equal(s.before?.value?.worlds?.length, s.worldsBefore?.value?.length + 1, `${row.templateId}: create must add exactly one world`);
-    assert.ok(ok(s.context), `${row.templateId}: context read failed ${JSON.stringify(s.context)}`);
-    const wc = body(s.context).worldCreation;
-    assert.ok(wc && Object.hasOwn(wc, 'creationFacts'), `${row.templateId}: worldCreation.creationFacts absent`);
-    assert.equal(canon(wc.creationFacts), canon(row.expected), `${row.templateId}: creationFacts not delivered verbatim`);
-    assert.equal(typeof wc.creationFacts, typeof row.expected, `${row.templateId}: root type changed`);
-    assert.equal(canon(s.after?.value), canon(s.before?.value), `${row.templateId}: reading creationFacts changed sessions, worlds or undo state`);
+    assert.ok(row.created?.worldId && row.created?.worldRef, `${row.templateId}: create failed`);
+    assert.equal(canon(row.created.creationFacts), canon(row.expected), `${row.templateId}: create changed creationFacts`);
+    assert.equal(row.worldsAfter?.length, row.worldsBefore?.length + 1, `${row.templateId}: create must add exactly one world`);
+    assert.ok(row.launched?.connectionRef, `${row.templateId}: launch by worldId failed`);
+    assert.equal(row.stopped?.state, 'STOPPED', `${row.templateId}: stop by connectionRef failed`);
+    assert.ok(row.skillBoundary, `${row.templateId}: skill-boundary read not executed (R-4/R-5)`);
+    assert.equal(canon(row.skillBoundary.result?.worldCreation), canon({ creationFacts: row.expected }), `${row.templateId}: not delivered verbatim`);
+    assert.equal(canon(row.afterSkillBoundary), canon(row.afterLaunch), `${row.templateId}: reading creationFacts changed files or processes`);
   }
 });
 
-test('OTHER_OBJECTS_AFFECTED names the real affected object and writes nothing, on direct build and on apply', () => {
-  const s = ev.affected?.steps;
-  assert.ok(s, 'affected-object scenario was not executed through the public entries');
-  assert.ok(ok(s.applyA) && body(s.applyA).outcome?.outcome === 'VERIFIED', `object A not built: ${JSON.stringify(s.applyA)}`);
-  const before = new Set((s.objectsBefore?.value || []).map(o => o.objectRef));
-  const created = (s.objectsWithA?.value || []).filter(o => !before.has(o.objectRef));
-  assert.equal(created.length, 1, 'building A must register exactly one object');
-  for (const [name, step, obs] of [['build', s.directDig, s.afterDirectDig], ['apply', s.applyDig, s.afterApplyDig]]) {
-    const response = body(step) ?? step?.value?.error;
-    assert.equal(response?.error?.code ?? response?.code, 'OTHER_OBJECTS_AFFECTED', `${name}: ${JSON.stringify(step)}`);
-    assert.equal(response?.error?.mutationState ?? response?.mutationState, 'NONE');
-    assert.deepEqual(response?.affectedObjects, created.map(o => ({ objectRef: o.objectRef, displayName: o.displayName })),
-      `${name}: affectedObjects must equal the registry's real object`);
-    assert.equal(canon(obs?.value), canon(s.beforeDig?.value), `${name}: refusal changed world, session or undo state`);
+test('OTHER_OBJECTS_AFFECTED is enforced and continue runs only on a decision bound to the current user action', () => {
+  const a = ev.affected;
+  assert.ok(a, `affected-object scenario not executed:\n${gapText()}`);
+  for (const step of ['directDig', 'applyDig']) {
+    assert.equal(a[step]?.value?.error?.code, 'OTHER_OBJECTS_AFFECTED', step);
+    assert.equal(a[step].value.error.mutationState, 'NONE', step);
+    assert.deepEqual(a[step].value.affectedObjects, a.registryObjectA, `${step}: names must come from the registry`);
   }
-});
-
-test('continue runs only on a decision bound to the current user action', () => {
-  const s = ev.affected?.steps;
-  assert.ok(s, 'affected-object scenario was not executed through the public entries');
-  const code = step => (body(step) ?? step?.value?.error)?.error?.code ?? (body(step) ?? step?.value?.error)?.code;
-  assert.equal(code(s.continueUndecided), 'INTENT_UNCONFIRMED', `continue without a decision: ${JSON.stringify(s.continueUndecided)}`);
-  assert.ok(s.continueForged?.thrown || s.continueForged?.value?.isError, 'forged continue input must be refused');
-  assert.equal(canon(s.afterRefusals?.value), canon(s.beforeDig?.value), 'refused continue changed state');
-  assert.equal(code(s.continueStale), 'INTENT_UNCONFIRMED', `stale-turn decision authorized continue: ${JSON.stringify(s.continueStale)}`);
-  assert.equal(canon(s.afterStale?.value?.worlds), canon(s.beforeDig?.value?.worlds), 'stale continue changed worlds');
-  assert.ok(ok(s.currentDecision), `host could not record the current decision: ${JSON.stringify(s.currentDecision)}`);
-  assert.ok(ok(s.continueCurrent) && body(s.continueCurrent).outcome?.outcome === 'VERIFIED', `current continue: ${JSON.stringify(s.continueCurrent)}`);
-  assert.notEqual(canon(s.afterContinue?.value?.undo), canon(s.beforeDig?.value?.undo), 'verified continue must be observable in undo status');
+  for (const step of ['continueUndecided', 'continueStale']) assert.equal(a[step]?.value?.error?.code, 'INTENT_UNCONFIRMED', step);
+  assert.ok(a.continueForged?.isError, 'forged continue must be refused');
+  for (const step of ['afterDirectDig', 'afterApplyDig', 'afterRefusals', 'afterStale']) assert.equal(canon(a[step]), canon(a.beforeDig), `${step} changed state`);
+  assert.equal(a.continueCurrent?.value?.result?.outcome?.outcome, 'VERIFIED');
+  assert.notEqual(canon(a.afterContinue), canon(a.beforeDig), 'verified continue must be independently observable');
 });
 
 test.after(async () => { if (!process.env.HANA_SKILLS_KEEP_TEST_ROOT) await rm(root, { recursive: true, force: true }); });
