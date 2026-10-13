@@ -1,0 +1,18 @@
+{
+  "note": "Every valid JSON root form the world source may return as creationFacts (C-local-worlds 第 8 条; C-skill skills-03 §4). Each value must reach hanaworlds_context.output.worldCreation.creationFacts unchanged: key presence, nulls, scalar types, array order, Unicode and NUL.",
+  "values": [
+    null,
+    true,
+    false,
+    0,
+    -1.5,
+    17,
+    "",
+    "保留\u0000é😀",
+    [],
+    {},
+    [null, [], {}, [null]],
+    {"a": null, "b": {"c": [1, "2", false, null], "d": {}}, "empty": []},
+    {"worldPath": "/not/a/path", "trustedMods": "all", "__proto__": {"polluted": true}, "constructor": {"prototype": {}}}
+  ]
+}
