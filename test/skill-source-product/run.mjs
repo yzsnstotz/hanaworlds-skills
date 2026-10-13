@@ -85,6 +85,33 @@ test('the skill reads affected objects and creation facts only from declared fie
   assert.doesNotMatch(content, /Stop, say which, and ask the player/, 'ungrounded "say which" must be replaced');
 });
 
+// C-skill skills-03 §8: every published sample, compared through the installed plugin.
+const samples = JSON.parse(await readFile(new URL('./c-skill-samples.json', import.meta.url), 'utf8')).samples;
+const skillCalls = samples.flatMap(s => s.items).filter(i => i?.contractVersion === 'skill/v1' && i.result?.kind === 'tool_call').map(i => i.result.call);
+const toolExchanges = samples.filter(s => s.items.length === 2 && s.items[0]?.contractVersion === 'session/v5');
+
+test('every C-skill tool_call sample is documented by the loaded skill and accepted by the live tool', () => {
+  assert.equal(samples.length, 62);
+  assert.ok(skillCalls.length >= 13);
+  for (const { tool, input } of skillCalls) {
+    assert.ok(examples.some(e => e.tool === tool && e.input.action === input.action), `loaded skill has no ${tool} ${input.action} example`);
+    assert.ok(ev.registry?.[tool]?.parameters, `${tool} has no live input schema`);
+    assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].parameters, input), [], `${tool} rejects sample ${JSON.stringify(input)}`);
+  }
+});
+
+test('every C-skill tool response sample the skill consumes matches the live output schema', () => {
+  assert.equal(toolExchanges.length, 27);
+  assert.deepEqual([...new Set(toolExchanges.map(s => s.title.split(' ')[0]))].sort(), ['hanaworlds_build', 'hanaworlds_context']);
+  for (const { id, title, items: [request, response] } of toolExchanges) {
+    const tool = title.split(' ')[0];
+    assert.ok(ev.registry?.[tool]?.parameters, `${id}: ${tool} not registered live`);
+    assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].parameters, request.input), [], `${id}: live tool rejects ${JSON.stringify(request.input)}`);
+    if (response.result) assert.deepEqual(validateJsonSchemaValue(ev.registry[tool].output, response.result), [], `${id}: live output schema rejects the sample result`);
+    if (response.affectedObjects) assert.ok(fieldPath(ev.registry[tool].output, 'affectedObjects'), `${id}: live output does not carry affectedObjects`);
+  }
+});
+
 test('model-forged consent on continue is refused by the live schema', () => {
   const params = ev.registry?.hanaworlds_build?.parameters;
   assert.ok(params, 'hanaworlds_build is not registered in the live tool registry');
