@@ -1,0 +1,4 @@
+{
+  "note": "External-module contract samples this skill consumes, copied verbatim from the published C-session contract document (worker rule: the peer is represented by its contract samples). Only published samples belong here. Published C-session is major 2 with the call summary only; it publishes no request/response samples, so the list is empty. Each entry, once published, is {\"doc\":\"C-session 第 n 版\",\"tool\":...,\"request\":{...},\"response\":{...}}.",
+  "samples": []
+}

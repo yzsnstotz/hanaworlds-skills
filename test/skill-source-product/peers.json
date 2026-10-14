@@ -1,9 +1,0 @@
-{
-  "note": "Peers installed beside this package through the normal DSH plugin manager, pinned to the exact commit on each provider's published main. Updating a pin is a design re-review. The world source is not listed: its package and repository names carry engine vocabulary the skills module may not contain (baseline coupling); an engine-neutral supply handle is requested from PM (DESIGN.md).",
-  "peers": [
-    { "module": "workshop", "contract": "C-session", "source": "git+https://github.com/yzsnstotz/hanaworlds-workshop.git#069c6d135f1b455ad623ea8ac24a4bb77b7ed239" },
-    { "module": "painter", "contract": "C-painter", "source": "git+https://github.com/yzsnstotz/hanaworlds-building-exterior-painter.git#74a90f161cfd29fe480598a8a2c6279a0883650c" },
-    { "module": "local-runtime", "contract": "world lifecycle v2 (published lifecycle service, consumed only to create, launch and stop test worlds)", "source": "git+https://github.com/yzsnstotz/hanaworlds-local-runtime.git#f54a1c5c4cee1e1f2ae2f1fcc0d53c9e865b313d" }
-  ],
-  "worldSource": null
-}
