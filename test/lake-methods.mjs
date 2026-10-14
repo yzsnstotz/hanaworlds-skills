@@ -1,6 +1,7 @@
 // skills-06 / J5.S1: Markdown SOURCE assertions, not a simulated planner.
-// Run after the unchanged npm run lint:skills:
-// node --test test/lake-methods.mjs
+// Q-314 card command (the original lint script stays unchanged):
+// npm run lint:skills && node --test test/reference-images.mjs test/lint-skills.mjs test/image-materials.mjs test/lake-methods.mjs
+// Missing guidance must fail the test phase of this complete card command.
 // Actual model selection, current-world capability and lake readback are product gates.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
