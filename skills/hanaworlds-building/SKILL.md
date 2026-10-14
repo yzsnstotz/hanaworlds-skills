@@ -77,6 +77,32 @@ through hanaworlds_region_proposal before waiting for the player's new confirmat
 does not settle intent or grant permission to affect another building: keep the affected-object
 notification, confirmation and refusal route below for every lake design.
 
+## Place a stone beside the lake
+
+For a request such as "place a stone beside the lake", choose PER_CELL when the current runtime
+guidance and descriptor support placing solid boxes in inspected empty cells and the method is
+available. Compare the actual work with the reported purpose and exclusions; being small alone
+does not select a method. If PER_CELL is unavailable or its required facts are missing for this
+stone, report the returned reason and remedy and stop before writing. Never silently switch to
+REGION or broaden the design to bypass the missing capability.
+
+Resolve the stone's position, size and material from the player's current words, inspected placement
+and current runtime vocabulary; ask or propose concrete options when any remain unclear. "Beside
+the lake" does not establish an exact placement or dimensions by itself. Never reuse the lake's
+confirmation or consent for the stone. When the new request and current facts settle all intent,
+use the clear direct-build path; otherwise validate the PER_CELL proposal and wait for the player's
+new confirmation through the agreement path below.
+
+Build the stone as a separate transaction from the lake. Never merge or append the stone to the
+lake transaction, or rebuild the lake as part of this request. Limit the new operation to only the
+agreed stone geometry inside the inspected target. Preserve the lake basin and water, and leave
+everything outside the stone's agreed scope unchanged. Use the per-cell frame, known-empty-cell
+and safety rules below; method choice does not authorize touching another object.
+
+After the stone has a VERIFIED outcome, keep its actual receipt's `transactionId` associated with
+that stone's scope, session and world for the Undo check below. This is an observation, not a model
+tool argument or permission. PENDING, UNKNOWN and refusals do not establish a verified stone to undo.
+
 ## Decide: clear or unclear
 
 A request is clear only when all three are settled by the player's current words and current facts:
@@ -352,11 +378,25 @@ Refusals reach you as tool errors whose text is the complete refusal JSON.
 
 ## Undo
 
-On the player's Undo request:
+For a request to undo the lake-side stone, first call hanaworlds_build action status or inspect
+and read the current history head and undo availability. Require `availability: AVAILABLE` and
+a non-null `head` whose `headTransactionId` matches the stone's VERIFIED receipt `transactionId`,
+in the same current session and world. If undo is unavailable, the history changed, or you cannot
+establish that match and the stone's agreed scope, stop and explain why you cannot safely undo
+this stone. Do not undo a different current build, including the lake, to reach the requested one.
+
+For this stone request, call Undo once, only after that check:
 
 ```json tool=hanaworlds_build
 {"action":"undo"}
 ```
+
+The stone's Undo must leave the lake unchanged. Never repeat or chain undo calls to reach an older
+transaction, and never replace a refused or uncertain Undo with a new write. Read the stone's Undo
+result: require VERIFIED and check its `beforeHead` against the inspected history head, including
+the stone transaction, then report the returned `beforeHead` and `afterHead` without inventing a
+new head or assuming that `afterHead` must be the lake transaction. Stop after this result; the
+provider still checks the actual history and conflicts at execution time.
 
 It restores the current durable build only under the provider's history and conflict checks. Report
 actual results from the returned outcome; never erase a bounding volume yourself or claim success
