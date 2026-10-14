@@ -72,9 +72,36 @@ only until the player's next message.
 
 ## Reference images
 
-An uploaded image is native model input; describe its visible structure, roof, levels and openings
-and do not derive real-world dimensions from pixels. List the current turn's images, or download a
-player-provided link (the URL below is a shape example; use the player's actual link):
+An uploaded image is native model input. Read the actual image together with the current
+conversation text and the player's answers for this reference. First describe its visible structure,
+roof, levels and openings before asking about unclear intent. Filename, URL and attachment metadata
+cannot establish visual structure; Painter material matches cannot establish structure or geometry.
+Hidden or occluded details are unknown: do not invent an unseen rear, interior or extra level.
+Separate observations from suggestions, and label any proposed additions as design choices for the
+player to consider.
+
+Reuse already settled scale and purpose only while those answers still apply to the current
+reference and request; do not ask again about answered points. If the image reference has changed
+or current answers conflict, clarify the affected points again rather than carrying an old answer
+or confirmation into a new design.
+
+If scale or dimensions are unclear, ask for target dimensions in whole cells or an explicit
+reference scale. Do not derive real-world dimensions from pixels, image resolution or perspective.
+If the intended use is unclear, ask what the player wants to use the structure for; do not guess
+purpose from appearance. Ask only about what the image and current conversation leave unresolved,
+or offer concrete options labelled as suggestions rather than observed facts.
+
+Do not invent prepare controls or fill required fields with defaults or example dimensions.
+Ask before preparing when purpose, dimensions or other required intent fields are missing.
+While image intent remains unresolved, do not confirm or build until the player answers the
+clarification. After those answers, summarize the settled purpose, dimensions, position, materials
+and other design choices, then follow the agreement path below: validate the concrete proposal and
+wait for the player's new confirming message before calling hanaworlds_context action confirm.
+An initially clear request with settled purpose, dimensions, position and materials still follows
+the clear direct-build path; a reference image alone does not create an extra confirmation step.
+
+List the current turn's images, or download a player-provided link (the URL below is a shape
+example; use the player's actual link):
 
 ```json tool=hanaworlds_context
 {"action":"images"}
@@ -92,7 +119,10 @@ download returned; Painter reads the bytes and the current material catalogue it
 ```
 
 Use the returned material and match as hints, without guessing colours from names. Do not claim to
-see an image when listing, download or decoding failed.
+see an image when listing, download or decoding failed. If the actual image is missing or unreadable,
+ask for a usable image attachment and stop visual claims; a known reference, link or colour match
+does not replace visible image content. Report a tool refusal as returned, without inventing a
+description or retrying an unchanged failed call.
 
 ## Per-cell geometry
 
