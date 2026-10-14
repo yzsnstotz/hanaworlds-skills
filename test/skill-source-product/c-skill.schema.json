@@ -1,5 +1,5 @@
 {
- "$comment": "C-skill skills-03 local structure (skill/v1 hanaworlds-building). tool_call inputs and proposal/worldCreation values reference the published C-session definitions (bc0c7527542f43cdd6eedb99cafa29c86f247da717f8c677a1e22c883ce4d2f9); hanaworlds_image_material is not model-callable in published C-painter (in-process bytes plus host facts).",
+ "$comment": "C-skill skills-03 local structure (skill/v1). $ref targets are the compiled-in C-session §11 definitions (ffd12e6f028254e1e16d063312d06371f53ea84e5c4b01d11776ca5287cebbb5); hanaworlds_image_material input is the published C-painter native parameters (a08043484ca55f975592b8ea3ab385bc82ddfa080a947ef257ac0b6372b44b4c). Additions: output kind reply; hostContext.localContext may be null (UNBOUND).",
  "request": {
   "type": "object",
   "properties": {
@@ -14,46 +14,18 @@
     "type": "object",
     "properties": {
      "sessionRef": {
-      "type": "string",
-      "minLength": 1
+      "$ref": "#/definitions/Ref"
      },
      "turnRef": {
-      "type": "string",
-      "minLength": 1
+      "$ref": "#/definitions/Ref"
      },
      "turnRevision": {
-      "type": "string",
-      "minLength": 1
+      "$ref": "#/definitions/Revision"
      },
      "localContext": {
-      "oneOf": [
+      "anyOf": [
        {
-        "type": "object",
-        "properties": {
-         "connectionRef": {
-          "type": "string",
-          "minLength": 1
-         },
-         "connectionIncarnationRef": {
-          "type": "string",
-          "minLength": 1
-         },
-         "worldRef": {
-          "type": "string",
-          "minLength": 1
-         },
-         "selectionRevision": {
-          "type": "string",
-          "minLength": 1
-         }
-        },
-        "required": [
-         "connectionRef",
-         "connectionIncarnationRef",
-         "worldRef",
-         "selectionRevision"
-        ],
-        "additionalProperties": false
+        "$ref": "#/definitions/LocalWorldContext"
        },
        {
         "type": "null"
@@ -305,7 +277,7 @@
               "const": "hanaworlds_build"
              },
              "input": {
-              "$ref": "#/definitions/BuildModelInput"
+              "$ref": "#/definitions/CompatibleBuildModelInput"
              }
             },
             "required": [
@@ -338,6 +310,31 @@
              },
              "input": {
               "$ref": "#/definitions/DownloadImageModelInput"
+             }
+            },
+            "required": [
+             "tool",
+             "input"
+            ],
+            "additionalProperties": false
+           },
+           {
+            "type": "object",
+            "properties": {
+             "tool": {
+              "const": "hanaworlds_image_material"
+             },
+             "input": {
+              "type": "object",
+              "properties": {
+               "attachmentRef": {
+                "type": "string"
+               }
+              },
+              "required": [
+               "attachmentRef"
+              ],
+              "additionalProperties": false
              }
             },
             "required": [

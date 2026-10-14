@@ -1,5 +1,23 @@
 {
- "source": "C-skill skills-03 §7, grounded on C-session bc0c7527542f43cdd6eedb99cafa29c86f247da717f8c677a1e22c883ce4d2f9",
+ "source": "C-skill skills-03 §8; every value tied to the published case ids in grounding",
+ "provenance": {
+  "C-session.md": {
+   "sha256": "ffd12e6f028254e1e16d063312d06371f53ea84e5c4b01d11776ca5287cebbb5",
+   "bytes": 9188014,
+   "sections": [
+    "v1 §9/§10",
+    "v2 §11 model types",
+    "v3 Q-298 correctedModelCases"
+   ]
+  },
+  "C-painter.md": {
+   "sha256": "a08043484ca55f975592b8ea3ab385bc82ddfa080a947ef257ac0b6372b44b4c",
+   "bytes": 160220907,
+   "sections": [
+    "v5 Q278ModelImageSupplement"
+   ]
+  }
+ },
  "samples": [
   {
    "id": "clarification-size",
@@ -7,14 +25,14 @@
     "contractVersion": "skill/v1",
     "requestId": "skill-clarification-size",
     "hostContext": {
-     "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
-     "turnRevision": "fixture-turn-4",
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
      "localContext": {
-      "connectionRef": "local-connection",
-      "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
-      "selectionRevision": "selection-1"
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
      }
     },
     "turn": {
@@ -43,7 +61,7 @@
     "requestId": "skill-tool-context-placement-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -88,7 +106,7 @@
     "requestId": "skill-tool-context-prepare-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -143,7 +161,7 @@
     "requestId": "skill-tool-context-confirm-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -185,7 +203,7 @@
     "requestId": "skill-tool-context-read-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -227,7 +245,7 @@
     "requestId": "skill-tool-hanaworlds_context-receiver-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -269,12 +287,12 @@
     "requestId": "skill-tool-world-creation-json-0",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -311,7 +329,7 @@
     "requestId": "skill-tool-hanaworlds_proposal-context-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -353,7 +371,7 @@
     "requestId": "skill-tool-hanaworlds_proposal-receiver-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -420,7 +438,7 @@
     "requestId": "skill-tool-hanaworlds_region_proposal-context-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -462,7 +480,7 @@
     "requestId": "skill-tool-hanaworlds_region_proposal-receiver-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -591,7 +609,7 @@
     "requestId": "skill-tool-build-advance-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -633,7 +651,7 @@
     "requestId": "skill-tool-hanaworlds_build-receiver-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -675,7 +693,7 @@
     "requestId": "skill-tool-build-inspect-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -717,7 +735,7 @@
     "requestId": "skill-tool-build-undo-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -759,7 +777,7 @@
     "requestId": "skill-tool-hanaworlds_write_methods-receiver-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -799,7 +817,7 @@
     "requestId": "skill-tool-hanaworlds_download_image-receiver-success",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -835,13 +853,383 @@
    }
   },
   {
+   "id": "tool-model-clear-direct",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-clear-direct",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-clear-direct",
+    "result": {
+     "kind": "tool_call",
+     "call": {
+      "tool": "hanaworlds_build",
+      "input": {
+       "action": "advance",
+       "directBuild": {
+        "method": "PER_CELL",
+        "controls": {
+         "purpose": "一个石头方块",
+         "dimensions": {
+          "width": 1,
+          "height": 1,
+          "depth": 1,
+          "unit": "node"
+         },
+         "entrancePortalRefs": [],
+         "styleText": null,
+         "siteRules": {
+          "requireEntranceConnectivity": false,
+          "entranceClearance": null,
+          "hazardPolicy": {
+           "forbidLiquid": true,
+           "maximumDamagePerSecond": 0
+          },
+          "optionalLightRule": null
+         }
+        },
+        "proposal": {
+         "decision": "BUILD",
+         "materials": {
+          "solid": {
+           "materialRef": "doc:solid",
+           "orientation": 0
+          }
+         },
+         "boxes": [
+          {
+           "min": [
+            0,
+            0,
+            0
+           ],
+           "max": [
+            0,
+            0,
+            0
+           ],
+           "materialRef": "solid"
+          }
+         ]
+        },
+        "imageRefs": []
+       }
+      }
+     }
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "input-equal",
+    "cases": [
+     "model-clear-direct"
+    ]
+   }
+  },
+  {
+   "id": "tool-model-region-clear-direct",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-region-clear-direct",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-region-clear-direct",
+    "result": {
+     "kind": "tool_call",
+     "call": {
+      "tool": "hanaworlds_build",
+      "input": {
+       "action": "advance",
+       "directBuild": {
+        "method": "REGION",
+        "controls": {
+         "purpose": "一个石头方块",
+         "dimensions": {
+          "width": 1,
+          "height": 1,
+          "depth": 1,
+          "unit": "node"
+         },
+         "entrancePortalRefs": [],
+         "styleText": null,
+         "siteRules": {
+          "requireEntranceConnectivity": false,
+          "entranceClearance": null,
+          "hazardPolicy": {
+           "forbidLiquid": true,
+           "maximumDamagePerSecond": 0
+          },
+          "optionalLightRule": null
+         }
+        },
+        "proposal": {
+         "decision": "REGION",
+         "block": {
+          "profileVersion": "region-voxels/v2",
+          "geometryProfile": "voxel-grid/v1",
+          "origin": [
+           -1,
+           0,
+           0
+          ],
+          "size": [
+           4,
+           1,
+           1
+          ],
+          "indexOrder": "X_FASTEST_THEN_Y_THEN_Z",
+          "palette": [
+           {
+            "materialRef": "doc:empty",
+            "orientation": 0
+           },
+           {
+            "materialRef": "doc:solid",
+            "orientation": 0
+           }
+          ],
+          "runs": [
+           [
+            1,
+            1
+           ],
+           [
+            1,
+            null
+           ],
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            1
+           ]
+          ]
+         }
+        },
+        "imageRefs": []
+       }
+      }
+     }
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "input-equal",
+    "cases": [
+     "model-region-clear-direct"
+    ]
+   }
+  },
+  {
+   "id": "tool-model-images-current",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-images-current",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-images-current",
+    "result": {
+     "kind": "tool_call",
+     "call": {
+      "tool": "hanaworlds_context",
+      "input": {
+       "action": "images"
+      }
+     }
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "input-equal",
+    "cases": [
+     "model-images-current"
+    ]
+   }
+  },
+  {
+   "id": "tool-model-download-current",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-download-current",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "照这张图建：https://images.example.org/user-provided.png",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-download-current",
+    "result": {
+     "kind": "tool_call",
+     "call": {
+      "tool": "hanaworlds_download_image",
+      "input": {
+       "url": "https://images.example.org/user-provided.png"
+      }
+     }
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "input-equal",
+    "cases": [
+     "model-download-current"
+    ]
+   }
+  },
+  {
+   "id": "tool-model-ambiguous-prepare",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-ambiguous-prepare",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "帮我建点东西",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-model-ambiguous-prepare",
+    "result": {
+     "kind": "tool_call",
+     "call": {
+      "tool": "hanaworlds_context",
+      "input": {
+       "action": "prepare"
+      }
+     }
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "input-equal",
+    "cases": [
+     "model-ambiguous-prepare"
+    ]
+   }
+  },
+  {
+   "id": "tool-image-material",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-image-material",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "照这张图选材料",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-tool-image-material",
+    "result": {
+     "kind": "tool_call",
+     "call": {
+      "tool": "hanaworlds_image_material",
+      "input": {
+       "attachmentRef": "workshop-current-image"
+      }
+     }
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "image-input-equal",
+    "images": [
+     "normal"
+    ]
+   }
+  },
+  {
    "id": "proposal-per-cell",
    "request": {
     "contractVersion": "skill/v1",
     "requestId": "skill-proposal-per-cell",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -904,7 +1292,7 @@
     "requestId": "skill-proposal-region",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1028,18 +1416,18 @@
     "contractVersion": "skill/v1",
     "requestId": "skill-affected-explain",
     "hostContext": {
-     "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
-     "turnRevision": "fixture-turn-4",
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
      "localContext": {
-      "connectionRef": "local-connection",
-      "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
-      "selectionRevision": "selection-1"
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
      }
     },
     "turn": {
-     "text": "把那一格挖掉",
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
      "media": []
     }
    },
@@ -1048,14 +1436,14 @@
     "requestId": "skill-affected-explain",
     "result": {
      "kind": "clarification",
-     "question": "这个设计会碰到已有的「小塔」和「矮墙」。要继续吗？继续需要你这一轮明确同意。"
+     "question": "这个设计会碰到已有的「样例对象」。要继续吗？继续需要你这一轮明确同意。"
     },
     "error": null
    },
    "grounding": {
-    "check": "names",
+    "check": "model-names",
     "cases": [
-     "affected-refusal"
+     "model-nonempty-overlap"
     ]
    }
   },
@@ -1066,7 +1454,7 @@
     "requestId": "skill-continue-after-agreement",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1109,7 +1497,7 @@
     "requestId": "skill-continue-overlap",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1128,7 +1516,7 @@
     "requestId": "skill-continue-overlap",
     "result": {
      "kind": "clarification",
-     "question": "就算你同意继续，也不能覆盖「小塔」和「矮墙」。我需要换一个不碰到它们的位置或尺寸，你想怎么改？"
+     "question": "就算你同意继续，也不能覆盖「样例对象」。我需要换一个不碰到它们的位置或尺寸，你想怎么改？"
     },
     "error": null
    },
@@ -1147,7 +1535,7 @@
     "requestId": "skill-continue-missing-decision",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1185,7 +1573,7 @@
     "requestId": "skill-continue-old-turn",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1223,7 +1611,7 @@
     "requestId": "skill-continue-changed-world",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1261,7 +1649,7 @@
     "requestId": "skill-continue-changed-target-facts",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1299,7 +1687,7 @@
     "requestId": "skill-continue-changed-affected-set",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1331,18 +1719,322 @@
    }
   },
   {
+   "id": "model-missing-name",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-missing-name",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-missing-name",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 TARGET_REQUIRED（REQUIRED_FACT_UNKNOWN）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-missing-name"
+    ],
+    "code": "TARGET_REQUIRED"
+   }
+  },
+  {
+   "id": "model-registry-changed",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-registry-changed",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-registry-changed",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 STALE_REVISION（REVISION_CHANGED）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-registry-changed"
+    ],
+    "code": "STALE_REVISION"
+   }
+  },
+  {
+   "id": "model-old-turn",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-old-turn",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-old-turn",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 TURN_REVISION_MISMATCH（REVISION_CHANGED）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-old-turn"
+    ],
+    "code": "TURN_REVISION_MISMATCH"
+   }
+  },
+  {
+   "id": "model-old-world",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-old-world",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-old-world",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 CURRENT_WORLD_MISMATCH（SCOPE_DENIED）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-old-world"
+    ],
+    "code": "CURRENT_WORLD_MISMATCH"
+   }
+  },
+  {
+   "id": "model-ambiguous-direct-refusal",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-ambiguous-direct-refusal",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-ambiguous-direct-refusal",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 INTENT_UNCONFIRMED（REQUIRED_FACT_UNKNOWN）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-ambiguous-direct-refusal"
+    ],
+    "code": "INTENT_UNCONFIRMED"
+   }
+  },
+  {
+   "id": "model-region-direct-refusal",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-region-direct-refusal",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-region-direct-refusal",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 CAPABILITY_UNAVAILABLE（POLICY_UNAVAILABLE）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-region-direct-refusal"
+    ],
+    "code": "CAPABILITY_UNAVAILABLE"
+   }
+  },
+  {
+   "id": "model-foreign-image",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-foreign-image",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-foreign-image",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 CURRENT_SESSION_MISMATCH（SCOPE_DENIED）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-foreign-image"
+    ],
+    "code": "CURRENT_SESSION_MISMATCH"
+   }
+  },
+  {
+   "id": "model-image-digest-changed",
+   "request": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-image-digest-changed",
+    "hostContext": {
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": {
+      "connectionRef": "doc-connection",
+      "connectionIncarnationRef": "doc-incarnation",
+      "worldRef": "brush-document-world",
+      "selectionRevision": "doc-selection-1"
+     }
+    },
+    "turn": {
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
+     "media": []
+    }
+   },
+   "response": {
+    "contractVersion": "skill/v1",
+    "requestId": "skill-model-image-digest-changed",
+    "result": {
+     "kind": "clarification",
+     "question": "这次没有建：工具返回 MEDIA_DIGEST_MISMATCH（SCOPE_DENIED）。我会按现在的事实重新确认，不会猜名字或位置；还缺的信息我会问你。"
+    },
+    "error": null
+   },
+   "grounding": {
+    "check": "model-code",
+    "cases": [
+     "model-image-digest-changed"
+    ],
+    "code": "MEDIA_DIGEST_MISMATCH"
+   }
+  },
+  {
    "id": "reply-creation-00",
    "request": {
     "contractVersion": "skill/v1",
     "requestId": "skill-reply-creation-00",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1378,12 +2070,12 @@
     "requestId": "skill-reply-creation-01",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1419,12 +2111,12 @@
     "requestId": "skill-reply-creation-02",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1460,12 +2152,12 @@
     "requestId": "skill-reply-creation-03",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1501,12 +2193,12 @@
     "requestId": "skill-reply-creation-04",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1542,12 +2234,12 @@
     "requestId": "skill-reply-creation-05",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1583,12 +2275,12 @@
     "requestId": "skill-reply-creation-06",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1624,12 +2316,12 @@
     "requestId": "skill-reply-creation-07",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1665,12 +2357,12 @@
     "requestId": "skill-reply-creation-08",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1706,12 +2398,12 @@
     "requestId": "skill-reply-creation-09",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1747,12 +2439,12 @@
     "requestId": "skill-reply-creation-10",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1795,12 +2487,12 @@
     "requestId": "skill-reply-creation-11",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1848,12 +2540,12 @@
     "requestId": "skill-reply-creation-12",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
       "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
+      "worldRef": "source-world-01",
       "selectionRevision": "selection-1"
      }
     },
@@ -1898,7 +2590,7 @@
     "requestId": "skill-reply-creation-13",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1937,7 +2629,7 @@
     "requestId": "skill-error-CAPABILITY_UNAVAILABLE",
     "hostContext": {
      "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
+     "turnRef": "turn-observed-1",
      "turnRevision": "fixture-turn-4",
      "localContext": {
       "connectionRef": "local-connection",
@@ -1979,18 +2671,13 @@
     "contractVersion": "skill/v1",
     "requestId": "skill-error-WORLD_NOT_BOUND",
     "hostContext": {
-     "sessionRef": "fixture-session",
-     "turnRef": "turn-1",
-     "turnRevision": "fixture-turn-4",
-     "localContext": {
-      "connectionRef": "local-connection",
-      "connectionIncarnationRef": "socket-open-1",
-      "worldRef": "fixture-world",
-      "selectionRevision": "selection-1"
-     }
+     "sessionRef": "document-session",
+     "turnRef": "model-turn-observed-1",
+     "turnRevision": "model-turn-revision-1",
+     "localContext": null
     },
     "turn": {
-     "text": "在选中的地方建一个石头方块",
+     "text": "现在建一个1×1×1石头方块；不要求入口连通、净空或光照，禁止液体且每秒伤害上限0。",
      "media": []
     }
    },
@@ -2009,10 +2696,11 @@
     }
    },
    "grounding": {
-    "check": "code",
-    "cases": [],
-    "code": "WORLD_NOT_BOUND",
-    "gap": "no published tool-level WORLD_NOT_BOUND case"
+    "check": "model-code",
+    "cases": [
+     "model-world-not-bound"
+    ],
+    "code": "WORLD_NOT_BOUND"
    }
   }
  ]
