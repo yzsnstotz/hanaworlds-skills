@@ -73,8 +73,8 @@ try {
   assert.equal(packedBody, sourceBody);
   // Upstream deliberately separates frontmatter from the loaded Markdown body.
   assert.equal(loaded.content.trim(), sourceBody.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').trim());
-  assert.match(loaded.content, /confirmedProposalRef/);
-  assert.match(loaded.content, /\{"action":"build","proposal":/);
+  assert.match(loaded.content, /\{"action":"advance"\}/);
+  assert.match(loaded.content, /\{"action":"advance","directBuild":/);
   const evidence = { host: require('@deepseek-ai/dsh/package.json').version,
     filesystem: require('@deepseek-ai/dsh-skill-filesystem/package.json').version,
     cwd: process.cwd(), profileDir, bundles: manifest.dsh.profile.bundles,

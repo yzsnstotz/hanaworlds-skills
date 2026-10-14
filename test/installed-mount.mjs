@@ -45,8 +45,8 @@ test('installed package mounts through upstream interpolation and filesystem dis
     const loaded = await provider.get(candidates[0], { signal: abort.signal });
     assert.equal(loaded.provider, 'hanaworlds-skills');
     assert.equal(loaded.path, join(packageDir, 'skills/hanaworlds-building/SKILL.md'));
-    assert.match(loaded.content, /confirmedProposalRef/);
-    assert.match(loaded.content, /\{"action":"build","proposal":/);
+    assert.match(loaded.content, /\{"action":"advance"\}/);
+    assert.match(loaded.content, /\{"action":"advance","directBuild":/);
     console.log(JSON.stringify({ packageDir, cwd: process.cwd(), path: loaded.path, provider: loaded.provider }));
   } finally { await provider.dispose(); abort.abort(); }
 });

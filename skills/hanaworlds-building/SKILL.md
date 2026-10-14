@@ -1,209 +1,244 @@
 ---
 name: hanaworlds-building
-description: Build clear requests directly, agree unclear ones (position, size, materials) through proposals, reshape terrain and undo in the current HanaWorlds world, choosing per-cell or region writes.
-whenToUse: Use for HanaWorlds building, terrain fill/dig, reference-image designs and Undo requests.
+description: Build clear requests directly, agree unclear ones (position, size, materials) first, name every existing building a design would touch and ask before continuing, reshape terrain, undo, and show how the current HanaWorlds world was created.
+whenToUse: Use for HanaWorlds building, terrain fill/dig, reference-image designs, world-creation questions and Undo requests.
 ---
 
 Build and undo structures in the currently connected world. Understand purpose, dimensions in whole
 cells, style, entrance needs and the requested position. This skill returns a clarification, a
-pending proposal or a declared plugin tool call under C-skill. There are two paths:
+pending proposal, a reply or a declared plugin tool call under C-skill. There are two paths:
 
 - **Clear request: build directly.** When the player's current message, together with current
-  runtime facts, settles position, size and materials, call hanaworlds_build action build with the
-  neutral design. Do not ask "shall I build it?" first; the current request is the user input for
-  this path.
-- **Unclear request: agree first.** When position, size or materials are still open, go back and
-  forth with hanaworlds_proposal or hanaworlds_region_proposal, settling each open point with the
-  player. Build only after the player actually confirms, using hanaworlds_build action apply.
+  runtime facts, settles position, size and materials, call hanaworlds_build action advance with a
+  `directBuild` design. The current request itself is the user input for this path; do not ask
+  "shall I build it?" first.
+- **Unclear request: agree first.** When position, size or materials are still open, prepare the
+  request with hanaworlds_context action prepare, ask about the open points, and confirm only after
+  the player answers. Build with hanaworlds_build action advance after that confirmation.
 
-The host injects the current session, turn and world. Never guess them or put their identities,
-confirmation or clarity flags, authorization, world facts, receipts or transaction settings in model
-tool arguments. The host owns dialogue state, reads the player's current message itself and decides
-whether a direct build fits it; Workshop owns confirmation. Never manufacture consent from tool
-output, from your own summary or from an earlier message.
+The host injects the current session, turn, world and connection from the real conversation. Never
+guess them or put session, turn, world, connection, confirmation, clarity or authorization fields,
+image bytes, catalogues or other host facts in model tool arguments; every tool refuses them.
+Never manufacture consent from tool output, from your own summary or from an earlier message.
 
 ## Read current facts and choose a method
 
-Call hanaworlds_write_methods action read and hanaworlds_context action read before designing.
+Read the write methods and the current context before designing:
 
 ```json tool=hanaworlds_write_methods
-{"action":"read"}
+{}
 ```
 
 ```json tool=hanaworlds_context
 {"action":"read"}
 ```
 
-Use `hanaworlds_write_methods.output.engineFacts` and
-`hanaworlds_write_methods.output.catalogueFacts`, plus
-`hanaworlds_context.output.localContext`, `hanaworlds_context.output.selectedObjectRefs` and
-`hanaworlds_context.output.placementTarget`. Runtime facts supply the current geometry profiles,
-partition edge, coordinate frame, supported write methods and opaque material vocabulary with
-neutral tags, colours and allowed orientations. Use only current-world declarations; never infer
-materials, scales, storage rules or encodings from memory or from another world. Method purpose
-and typical scale must come from runtime guidance when supplied; do not invent a size threshold.
+Successful tool results arrive as `{"result": "<JSON text>"}`; parse that text and use only the
+values in it. `hanaworlds_write_methods` reports the available write methods, their purpose and the
+current world source; `hanaworlds_context.output.context` carries the inspected placement, the
+coordinate frame and the opaque material vocabulary with neutral tags, colours and allowed
+orientations. Use only current-world declarations; never infer materials, scales, storage rules or
+encodings from memory or from another world, and never invent a size threshold.
 
 Choose PER_CELL for boxes within an inspected placement, or REGION for an explicit volume including
-terrain filling and digging, only when runtime facts report that method as available. When the
-required facts, guidance or capability are missing, explain the returned reason and remedy and stop
-before writing. For WORLD_NOT_BOUND or CAPABILITY_UNAVAILABLE, offer the reported connection or
-capability step. Never fill a missing fact with a guess or repeat an unchanged failed call.
+terrain filling and digging, only when runtime facts report that method as available. When facts,
+guidance or capability are missing, explain the returned reason and remedy and stop before writing.
+Never fill a missing fact with a guess or repeat an unchanged failed call.
 
 ## Decide: clear or unclear
 
 A request is clear only when all three are settled by the player's current words and current facts:
 
-- **Position**: the player names the reported placement target or a selected object, or an explicit
-  spot that the current placement facts cover.
-- **Size**: whole-cell dimensions are given, or follow unambiguously from the request (a count of
-  cells, a stated footprint and height) within the inspected placement.
+- **Position**: the player names the reported placement or a selected object, or an explicit spot
+  the current placement facts cover.
+- **Size**: whole-cell dimensions are given, or follow unambiguously from the request.
 - **Materials**: each named material maps to exactly one entry of the current runtime vocabulary by
   its neutral tags or colour, or the player leaves the choice to you and the vocabulary offers one.
 
 If any of these is open, conflicting, or would reach past the request (touching other objects,
 moving an agreed target, a broader area than asked), the request is unclear: take the agreement path.
 Do not resolve an open point by picking a default and building; ask, or propose concrete options.
-A clear request still uses only current facts: geometry that does not fit the inspected placement is
-not clear.
+
+## Placement
+
+When the player points at where to build, read the inspected spot for the requested footprint:
+
+```json tool=hanaworlds_context
+{"action":"placement","width":1,"depth":1,"height":1}
+```
+
+The values are a shape example; use the player's actual whole-cell dimensions. A placement is valid
+only until the player's next message.
 
 ## Reference images
 
-An uploaded image is native model input. Describe its visible structure, roof, levels and openings;
-do not derive real-world dimensions from pixels. A URL or filename alone is not an image. For a
-player-provided URL call hanaworlds_download_image action download:
+An uploaded image is native model input; describe its visible structure, roof, levels and openings
+and do not derive real-world dimensions from pixels. List the current turn's images, or download a
+player-provided link (the URL below is a shape example; use the player's actual link):
+
+```json tool=hanaworlds_context
+{"action":"images"}
+```
 
 ```json tool=hanaworlds_download_image
-{"action":"download","url":"https://example.org/reference.png"}
+{"url":"https://images.example.org/user-provided.png"}
 ```
 
-The URL above is a shape example; replace it with the actual player's link. Inspect the returned image
-and retain `hanaworlds_download_image.output.attachmentRef`. Do not claim to see an image when download
-or decoding failed. Call hanaworlds_image_material action match with the actual returned
-`hanaworlds_download_image.output.image` bytes object. For uploaded images the host must supply an
-actual bytes object bound to the attachment. The host injects the current material catalogue;
-never send a guessed catalogue or use an attachment identifier instead of image bytes.
+For material hints from an image, pass only the attachment reference that the image listing or the
+download returned; Painter reads the bytes and the current material catalogue itself:
 
 ```json tool=hanaworlds_image_material
-{"action":"match","image":{"mediaType":"image/png","bytesBase64":"AQID","bytesDigest":"039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81","byteLength":3}}
+{"attachmentRef":"workshop-current-image"}
 ```
 
-This illustrates fields only, not a real decodable image. Copy actual bytes, media type,
-length and digest from the host or download result. Painter reports dominant colours and closest
-legal materials using CIEDE2000 with zero model calls and zero world writes. Use its returned
-`hanaworlds_image_material.output.matches` as material hints, without guessing colours from names.
+Use the returned material and match as hints, without guessing colours from names. Do not claim to
+see an image when listing, download or decoding failed.
 
 ## Per-cell geometry
 
 A per-cell design is a BUILD proposal of pure geometry. Local material names map to opaque material
-references and neutral orientation values declared by the current catalogue.
+references and neutral orientation values declared by the current catalogue. Use the runtime
+coordinate frame: local box offsets translate from its sampled minimum, with inclusive extents of
+max - min + 1. Each translated cell must be known empty and inside the inspected target; occupied or
+unknown cells are not writable. Do not clip, expand the inspection, guess a new frame or move an
+agreed target.
 
-```json tool=hanaworlds_proposal
-{"action":"validate","proposal":{"decision":"BUILD","materials":{"wall":{"materialRef":"runtime-material-ref","orientation":0}},"boxes":[{"min":[0,0,0],"max":[1,1,1],"materialRef":"wall"}]}}
-```
-
-This is a shape example, not a template, a suggested size, or permission to use the placeholder
-material or orientation. Derive geometry from the player's actual request and current inspected
-placement. Use the runtime coordinate frame: local box offsets translate from its sampled minimum,
-with inclusive extents of max - min + 1. Each translated cell must be known empty and inside the
-inspected target; occupied or unknown cells are not writable. Do not clip, expand the inspection,
-guess a new frame or move an agreed target. A missing or stale placement needs a real inspection
-through the host and a new design; no tool takes a model-supplied placement or confirmation.
-
-Plan free space as well as solids. Count actual floor, wall and roof thickness, overlaps and every
-roof layer. For a floor top and first roof underside, free height is their difference minus one.
-When entrance connectivity is part of the design, reserve a connected interior, doorway and path
-with the requested width, height and depth. Design clearance does not establish player-body
-clearance: that fact belongs to the world source. Choose entrance, hazard and light details
-explicitly when needed; never invent safety defaults or silently relax a failed rule. Keep the
-actual dimensions, openings and roof shape; a geometry error alone does not prove that the
-available site is too small.
+Plan free space as well as solids: count floor, wall and roof thickness, overlaps and every roof
+layer. When entrance connectivity is part of the design, reserve a connected interior, doorway and
+path with the requested width, height and depth. Choose entrance, hazard and light details
+explicitly when needed; never invent safety defaults or silently relax a failed rule.
 
 ## Region geometry
 
 A region design is a REGION proposal using the runtime geometry profile and material palette.
-This major supports the following neutral cell-grid shape only if the current source reports it:
-
-```json tool=hanaworlds_region_proposal
-{"action":"validate","proposal":{"decision":"REGION","block":{"profileVersion":"region-voxels/v2","geometryProfile":"voxel-grid/v1","origin":[0,0,0],"size":[2,1,1],"indexOrder":"X_FASTEST_THEN_Y_THEN_Z","palette":[{"materialRef":"runtime-material-ref","orientation":0}],"runs":[[2,0]]}}}
-```
-
-Replace example position, size, material and orientation with the actual requested design and
-runtime facts. Coordinates are absolute world cell coordinates. For origin [ox,oy,oz] and size
-[sx,sy,sz], index = (x-ox) + sx*((y-oy) + sy*(z-oz)). Palette entries are unique, all used, and
-sorted by opaque material reference in UTF-16 order then orientation. Adjacent runs must differ;
-their counts sum to sx*sy*sz. The runtime catalogue's empty material reference digs; a null palette
-index means the cell is unspecified and keeps its current content. Never construct or decode a
-material reference. Filling and digging are never exempt from validation.
+Coordinates are absolute world cell coordinates. For origin [ox,oy,oz] and size [sx,sy,sz],
+index = (x-ox) + sx*((y-oy) + sy*(z-oz)). Palette entries are unique, all used, and sorted by opaque
+material reference in UTF-16 order then orientation. Adjacent runs must differ; their counts sum to
+sx*sy*sz. The runtime catalogue's empty material reference digs; a null palette index keeps the
+cell's current content. Never construct or decode a material reference.
 
 ## Clear request: build directly
 
-Send the finished neutral design, per-cell or region, as the proposal of hanaworlds_build action
-build. The input is exactly the action and the proposal:
+Send the finished design with its neutral controls (purpose, dimensions, entrance portals, style and
+site rules taken from the player's words) as `directBuild`. A per-cell example:
 
 ```json tool=hanaworlds_build
-{"action":"build","proposal":{"decision":"BUILD","materials":{"wall":{"materialRef":"runtime-material-ref","orientation":0}},"boxes":[{"min":[0,0,0],"max":[1,1,1],"materialRef":"wall"}]}}
+{"action":"advance","directBuild":{"method":"PER_CELL","controls":{"purpose":"a stone block","dimensions":{"width":1,"height":1,"depth":1,"unit":"node"},"entrancePortalRefs":[],"styleText":null,"siteRules":{"requireEntranceConnectivity":false,"entranceClearance":null,"hazardPolicy":{"forbidLiquid":true,"maximumDamagePerSecond":0},"optionalLightRule":null}},"proposal":{"decision":"BUILD","materials":{"wall":{"materialRef":"runtime-material-ref","orientation":0}},"boxes":[{"min":[0,0,0],"max":[0,0,0],"materialRef":"wall"}]},"imageRefs":[]}}
 ```
+
+A region example:
 
 ```json tool=hanaworlds_build
-{"action":"build","proposal":{"decision":"REGION","block":{"profileVersion":"region-voxels/v2","geometryProfile":"voxel-grid/v1","origin":[0,0,0],"size":[2,1,1],"indexOrder":"X_FASTEST_THEN_Y_THEN_Z","palette":[{"materialRef":"runtime-material-ref","orientation":0}],"runs":[[2,0]]}}}
+{"action":"advance","directBuild":{"method":"REGION","controls":{"purpose":"fill two cells","dimensions":{"width":2,"height":1,"depth":1,"unit":"node"},"entrancePortalRefs":[],"styleText":null,"siteRules":{"requireEntranceConnectivity":false,"entranceClearance":null,"hazardPolicy":{"forbidLiquid":true,"maximumDamagePerSecond":0},"optionalLightRule":null}},"proposal":{"decision":"REGION","block":{"profileVersion":"region-voxels/v2","geometryProfile":"voxel-grid/v1","origin":[0,0,0],"size":[2,1,1],"indexOrder":"X_FASTEST_THEN_Y_THEN_Z","palette":[{"materialRef":"runtime-material-ref","orientation":0}],"runs":[[2,0]]}},"imageRefs":[]}}
 ```
 
-These are shapes only; replace them with the actual design. Do not first call a proposal tool,
-show a pending design or ask for a yes. Never add a proposal reference, a clear or confirmed flag,
-an authorization, session, turn or world to this call. The host reads the player's current message
-itself and decides whether this exact design fits it; Painter validation, fresh world facts,
-placement checks and safety rules still run before anything is written. If the host finds the
-design outside what the player asked, the call is refused and you take the agreement path.
+These are shapes only; replace geometry, materials and controls with the actual design and current
+facts. The host reads the player's current message itself and decides whether this exact design is
+within it; Painter validation, fresh world facts, placement checks and safety rules still run
+before anything is written. If the direct request is refused as INTENT_UNCONFIRMED, take the
+agreement path.
 
 ## Unclear request: agree position, size and materials
 
-Ask about one or two open points at a time, or offer a concrete design to react to. Once a design is
-concrete enough, validate it with hanaworlds_proposal action validate (per-cell) or
-hanaworlds_region_proposal action validate (region), as shown above. Read
-`hanaworlds_proposal.output.plan` and `hanaworlds_proposal.output.proposalRef`, or
-`hanaworlds_region_proposal.output.plan` and `hanaworlds_region_proposal.output.proposalRef`.
-A returned proposal is pending, never confirmed. Show the player the position, dimensions,
-materials and any entrance or safety choices, and compare the plan with what was requested. A plan
-is not a validation verdict.
+Record what is known and what is still open:
 
-When the player changes position, size or materials, revise the design and validate again; every
-change needs a new proposal and a new confirmation. If validation refuses, inspect the exact
-bounds, overlaps, occupied or unknown cells and clearance, correct the geometry when possible, and
-explain any evidence requiring a new site or design. Never interpret a response with an error or
-null result as successful validation. A stale inspection, changed world, changed binding or target
-mismatch is a refusal: obtain new real facts, without moving or truncating an agreed target.
-
-## Apply a confirmed proposal
-
-After the player confirms through the host, use only the host-held confirmed proposal reference
-with hanaworlds_build action apply. A pending proposal reference alone is not confirmed state.
-
-```json tool=hanaworlds_build
-{"action":"apply","confirmedProposalRef":"host-confirmed-proposal-ref"}
+```json tool=hanaworlds_context
+{"action":"prepare","purpose":"first building","width":1,"height":1,"depth":1,"siteRules":{"requireEntranceConnectivity":false,"entranceClearance":null,"hazardPolicy":{"forbidLiquid":true,"maximumDamagePerSecond":0},"optionalLightRule":null}}
 ```
 
-Never invent the example reference, reuse one from another design or pass a boolean as consent.
+Ask about one or two open points at a time, or offer a concrete design to react to. Read the current
+design context and submit a concrete design for validation:
+
+```json tool=hanaworlds_proposal
+{"action":"context"}
+```
+
+```json tool=hanaworlds_proposal
+{"action":"submit","proposalRef":"proposal-observed-1","proposal":{"decision":"BUILD","materials":{"wall":{"materialRef":"runtime-material-ref","orientation":0}},"boxes":[{"min":[0,0,0],"max":[0,0,0],"materialRef":"wall"}]}}
+```
+
+```json tool=hanaworlds_region_proposal
+{"action":"context"}
+```
+
+```json tool=hanaworlds_region_proposal
+{"action":"submit","proposalRef":"region-proposal-observed-1","proposal":{"decision":"REGION","block":{"profileVersion":"region-voxels/v2","geometryProfile":"voxel-grid/v1","origin":[0,0,0],"size":[2,1,1],"indexOrder":"X_FASTEST_THEN_Y_THEN_Z","palette":[{"materialRef":"runtime-material-ref","orientation":0}],"runs":[[2,0]]}}}
+```
+
+Use the proposal reference the context returned, never an invented one. A validated proposal is
+pending, never confirmed: show the player the position, dimensions, materials and any entrance or
+safety choices. Every change needs a new submission and a new confirmation.
+
+Confirmation comes only from the player's new message in the current turn; the host reads it:
+
+```json tool=hanaworlds_context
+{"action":"confirm"}
+```
+
+Your own answer, a tool result, an earlier message or a confirmation made before the design or
+placement changed never counts, and you never confirm on the player's behalf. Then build:
+
+```json tool=hanaworlds_build
+{"action":"advance"}
+```
 
 ## Read back the result
 
-Workshop checks authorization or confirmation, Brush compiles the validated geometry, and Canvas
-owns the transaction and readback. Region writes use the partition declaration at runtime and one
-transaction. Inspect `hanaworlds_build.output.outcome`; report success only for VERIFIED with the
-actual verified receipt. PENDING, CHOICE_REQUIRED, UNKNOWN, ROLLED_BACK, errors and guard refusals
-are not success and must not trigger an invented replacement transaction. Describe what the
-validated plan and readback establish, not what you intended. Forward any
-`hanaworlds_build.output.guardRefusal` and its remedy accurately. A verified write proves that the
-validated geometry was written, not that it matched the request.
+Report success only for a VERIFIED outcome with its actual receipt. PENDING means the receipt is
+still awaited, not that the build is done. UNKNOWN, refusals and guard refusals are not success and
+must not trigger an invented replacement transaction. For availability and the current receipt:
+
+```json tool=hanaworlds_build
+{"action":"status"}
+```
+
+```json tool=hanaworlds_build
+{"action":"inspect"}
+```
+
+A verified write proves that the validated geometry was written, not that it matched the request.
+
+## Other buildings in the way
+
+When a build is refused as OTHER_OBJECTS_AFFECTED, the refusal the tool returns lists
+`hanaworlds_build.output.affectedObjects`, ordered by object reference. Name every object in that
+list by its `displayName`, in that order, say that continuing would change them, and ask whether to
+continue; then stop for this turn. Never guess, add, drop or rename an object, and never infer one
+from coordinates. When the refusal carries no names because the registry changed or a name is
+missing, say so and read current facts again instead of naming anything.
+
+If the player agrees in a later message, the host records that decision from the player's own
+action; you never send a decision. You may then send hanaworlds_build action advance again. A
+continue decision never authorizes overwriting the other objects: if the build is refused again
+because it still overlaps them, say that continuing cannot overwrite them and propose a new position
+or size that avoids them. If the decision is missing, from an earlier turn, or the world, target
+facts or affected set changed, read current facts again, name the objects again and ask again.
+
+## World creation facts
+
+When the player asks how the current world was created, read the creation result:
+
+```json tool=hanaworlds_context
+{"action":"creation_result"}
+```
+
+The read context also carries `worldCreation`. It is null when the host has no creation result for
+this world in the current turn; `{"creationFacts": null}` means the world was created and its
+creation facts are null. Keep the two apart. Reply with the creation facts shown verbatim as JSON
+(every key, null, number, string, array order and nesting exactly as returned) and echo the
+`worldCreation` value unchanged. Never interpret paths, mods, permissions or any other key in them,
+never use them as design facts, and never start a creation yourself.
 
 ## Refusals
 
-Report the returned code and reason in plain words; never retry an unchanged call or treat a
-refusal as partial success.
+Report the returned code, reason and failure source (owner, operation, resource, kind, nativeCode)
+exactly as given, including an optional world reference; never add, drop or rewrite fields, never
+change the mutation state, never retry an unchanged call or treat a refusal as partial success.
+Refusals reach you as tool errors whose text is the complete refusal JSON.
 
 - INTENT_UNCONFIRMED: the host did not find this design within what the player asked. Explain what
-  was outside the request and move to the agreement path; never add a flag or reference to force it.
-- OTHER_OBJECTS_AFFECTED: the design would touch other objects. Stop, say which, and ask the
-  player; continuing needs the explicit confirmation flow, never a direct build.
+  was outside the request and take the agreement path; never add a flag or reference to force it.
+- OTHER_OBJECTS_AFFECTED: see "Other buildings in the way".
 - WORLD_NOT_BOUND, CAPABILITY_UNAVAILABLE, CAPABILITY_GAP: no usable world or capability; offer the
   reported connection or capability step and do not write.
 - TRANSACTION_CONFLICT, TURN_REVISION_MISMATCH, CURRENT_WORLD_MISMATCH, TARGET_FACTS_STALE,
@@ -214,30 +249,19 @@ refusal as partial success.
 - BUILD_INVALID, UNSUPPORTED_MATERIAL, AMBIGUOUS_GEOMETRY: correct the geometry or material from
   current facts, or ask the player when the fix would change what they asked.
 - APPLY_FAILED, RESTORE_FAILED: the write or its rollback failed. Report the returned mutation state,
-  reason and retryability, then call hanaworlds_build action inspect before any further write.
+  reason and retryability, then check the status before any further write.
 
-## Inspect and Undo
+## Undo
 
-For availability and the current receipt call hanaworlds_build action inspect:
-
-```json tool=hanaworlds_build
-{"action":"inspect"}
-```
-
-On the player's Undo request call hanaworlds_build action undo:
+On the player's Undo request:
 
 ```json tool=hanaworlds_build
 {"action":"undo"}
 ```
 
-It restores the current durable build, including the whole latest region write, only under the
-provider's history and conflict checks. Report actual results from the returned outcome or receipt;
-never erase a bounding volume yourself or claim success from an optimistic message. Redo is available
-only on the player's request through hanaworlds_build action redo:
-
-```json tool=hanaworlds_build
-{"action":"redo"}
-```
+It restores the current durable build only under the provider's history and conflict checks. Report
+actual results from the returned outcome; never erase a bounding volume yourself or claim success
+from an optimistic message.
 
 No shell commands, direct world writes, other model calls or alternate planner belong to this skill.
 Entities and interior workflows remain deferred.

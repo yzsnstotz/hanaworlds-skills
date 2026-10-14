@@ -2,9 +2,10 @@
 
 HanaWorlds domain skill source (D-13). The installed bundle contains Markdown,
 its Cordis patch and package metadata; it registers no tools or runtime plugin code.
-Workshop and Painter own the seven tools declared by `hanaworlds-contracts@2.6.0`.
-The source dependency pins the published Git tag `v2.6.0` exactly
-(commit `2d1c9bf31fb5bb9555befadea03d722705d5a8f5`).
+Workshop owns six model tools and Painter owns `hanaworlds_image_material`, as
+published in the C-session (versions 1–3) and C-painter (version 5) contract
+documents. Their model-facing structures are compiled into `tools/structures.json`
+with the documents' SHA-256; there is no contract package dependency.
 
 Install this package as a DSH profile bundle using the host's package manager.
 The one-line `cordis.patch.yml` inserts the unchanged upstream
@@ -44,24 +45,27 @@ activation and skill loading; it does not verify model execution or world behavi
 The skill follows C-skill `skill/v1`: current turn text and image attachment
 references, with session/turn/world injected only by the host. A clear request
 (position, size and materials settled by the current message and runtime facts)
-is built directly with `hanaworlds_build` action `build` carrying only a neutral
-BUILD or REGION proposal; the host reads the current message and authorizes it.
-An unclear request goes back and forth through `hanaworlds_proposal` /
-`hanaworlds_region_proposal` and is applied only with the host-held confirmed
-proposal reference after the player confirms. Every published refusal of the
-direct build action has handling guidance. Geometry and
-material vocabulary come from current runtime facts. C-session and C-painter are
-consumed through published contracts, never through other plugin implementations.
-The authoritative examples and fixture-only mock are available from
-`hanaworlds-contracts/fixtures/skill-tools`, `hanaworlds-contracts/fixtures/direct-build`
-and the root `createSkillToolsMock` export.
+is built directly with `hanaworlds_build` action `advance` carrying a neutral
+`directBuild` (PER_CELL or REGION); the host reads the current message and
+authorizes it. An unclear request is prepared with `hanaworlds_context` action
+`prepare`, clarified, confirmed only by the player's new message
+(`hanaworlds_context` action `confirm`) and then advanced. When a build is refused
+as OTHER_OBJECTS_AFFECTED the skill names every object in the refusal's
+`affectedObjects`, in order, and asks; continuing is recorded by the host from the
+player's own action, and a continue decision never authorizes overwriting the
+objects. Image material hints pass only an `attachmentRef`; world creation facts
+from `creation_result` are shown verbatim, keeping `worldCreation: null` and
+`{"creationFacts": null}` distinct. Geometry and material vocabulary come from
+current runtime facts; other plugins are consumed only through the published
+contract documents, never through their implementations.
 
-`test/direct-build-consumer.mjs` is an independent consumer of the published
-direct-build contract: it checks the skill's direct examples against
-`ToolDirectBuildInput`, that forged confirmation/authorization/identity fields are
-rejected, that the skill names every refusal declared for the action, and runs the
-published fixture provider with and without independent host authorization.
-It is SOURCE/FIXTURE evidence only, not a running Workshop, model, world or UI.
+`test/skill-source-product/run.mjs` (run by the card command
+`npm run lint:skills && node test/skill-source-product/run.mjs`) packs and
+installs this bundle through the official plugin manager, checks the live body,
+observes files (digest and inode identity) and processes before and after loading,
+and checks every C-skill sample value by value against the published C-session and
+C-painter cases compiled into its fixtures. It is source/document evidence, not a
+running Workshop, model, world or UI.
 
 For source checks (Node.js 24 or newer):
 
@@ -93,10 +97,9 @@ development dependencies used only by this regression, not runtime bundle conten
 Set `HANA_SKILLS_TEST_DIR` to choose the temporary parent, and
 `HANA_SKILLS_KEEP_TEST_ROOT=1` to retain the profile, logs and live-catalog evidence.
 
-The linter reads `hanaworlds-contracts/tools` and `hanaworlds-contracts/skill`,
-checks every named tool, prose action, annotated input/output field path and JSON
-input example, and invokes the published strict validator for nested fields.
-There is no local tool allowlist. It also rejects prohibited engine vocabulary.
+The linter reads `tools/structures.json` (the published model-facing structures),
+checks every named tool, prose action, annotated output field path and JSON input
+example against the closed nested schemas with `tools/schema.mjs`. It also rejects prohibited engine vocabulary.
 Examples show data shapes, not live references, placement facts or image content.
 The linter does not prove semantic intent, material membership or live world safety;
 those checks belong to the runtime providers.
@@ -112,10 +115,8 @@ skill discovery, not a running DSH/model/world/UI acceptance.
 Sources and licences: upstream filesystem providers 0.2.0-rc.2 and 0.2.1-alpha.2 (MIT),
 Cordis loader 1.0.6-alpha.1 and include 1.0.10-alpha.1 (MIT), official DSH,
 app boot, plugin manager and launch environment 0.2.1-alpha.2 (MIT), pnpm 10.23.0 (MIT),
-YAML 2.9.1 (ISC), contracts 2.6.0
-(MIT). Skill prose derives from Workshop main `0fb3fef83abd0177b13af4a881fcdb6ac0b6b159`
-`src/building-skill.mjs` (MIT), revised to the published neutral tool contracts.
+YAML 2.9.1 (ISC). Skill prose derives from Workshop main `0fb3fef83abd0177b13af4a881fcdb6ac0b6b159`
+`src/building-skill.mjs` (MIT), revised to the published C-session and C-painter model inputs.
 
 Upstream: https://github.com/deepseek-ai/deepseek-harness
 
-Contracts: https://github.com/yzsnstotz/hanaworlds-contracts/tree/v2.6.0
