@@ -1,8 +1,9 @@
 // skills-05 / J4.S3: SOURCE instructions and original lint regression only.
 // No model, Painter runtime, real Host or game acceptance is claimed here.
-// Card command: npm run lint:skills
-// Runs the original structure lint first, then this suite and the existing
-// reference-image/lint regressions. Missing instructions must fail that command.
+// Q-309 card command:
+// npm run lint:skills && node --test test/reference-images.mjs test/lint-skills.mjs test/image-materials.mjs
+// The card runs the original lint and these SOURCE suites separately.
+// Missing instructions must fail the test phase of that complete command.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
