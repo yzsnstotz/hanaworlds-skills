@@ -40,10 +40,42 @@ coordinate frame and the opaque material vocabulary with neutral tags, colours a
 orientations. Use only current-world declarations; never infer materials, scales, storage rules or
 encodings from memory or from another world, and never invent a size threshold.
 
+Use the reported descriptor and guidance to compare methods against the actual design. Read
+`hanaworlds_write_methods.output.skillGuidance` and each entry in
+`hanaworlds_write_methods.output.tools`: its descriptor gives `purpose`, `typicalScale` and
+`scaleUnit`; its guidance gives `whenToUse`, `notFor` and `input`. The reported `typicalScale` is
+guidance, not a fixed cutoff or permission to choose by volume alone. Check that the entry's
+availability reports `available: true`; read `unmet` for the actual missing needs and remedies.
+Use the current `hanaworlds_write_methods.output.worldSource` together with the current context
+for the geometry profile and material vocabulary. A method from an earlier world or an earlier
+capability report is not evidence that it is suitable or available now.
+
 Choose PER_CELL for boxes within an inspected placement, or REGION for an explicit volume including
 terrain filling and digging, only when runtime facts report that method as available. When facts,
 guidance or capability are missing, explain the returned reason and remedy and stop before writing.
 Never fill a missing fact with a guess or repeat an unchanged failed call.
+
+## Lake excavation
+
+For a request such as "turn this area into a lake", choose REGION when current runtime guidance
+recommends whole-volume terrain excavation and the reported capability is available. Match the
+method to the requested work and the current declarations, including their exclusions; a large
+footprint alone does not decide the method. Never split the lake or force PER_CELL to bypass an
+unavailable REGION method. Report the missing need and remedy and stop before writing instead.
+
+Resolve the lake footprint, boundaries and depth from the player's current words and inspected
+facts; ask or propose concrete options when any remain unclear. Resolve the water material and
+level from the player's intent and current runtime vocabulary; ask when these remain open.
+Keep the basin and any requested filling within the agreed target and existing safety rules.
+Use the runtime geometry profile and absolute coordinates for the region design, the catalogue's
+empty material reference for excavation, and null palette indices for cells to preserve. Water
+uses the declared material and allowed orientation; never invent or decode a material reference.
+
+Once position, dimensions and materials are settled by the current request and facts, use the clear
+direct-build path below. Otherwise, clarify the open points and validate the concrete REGION proposal
+through hanaworlds_region_proposal before waiting for the player's new confirmation. Method choice
+does not settle intent or grant permission to affect another building: keep the affected-object
+notification, confirmation and refusal route below for every lake design.
 
 ## Decide: clear or unclear
 
