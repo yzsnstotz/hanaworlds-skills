@@ -1,7 +1,8 @@
 // skills-04 / J4.S2: SOURCE checks for a Markdown-only module.
 // These assert the instructions supplied to the model, not model compliance.
 // Real-image conversations and current Host bindings remain product checks.
-// Run: node --test test/reference-images.mjs
+// Q-305 card command: npm run lint:skills && node --test test/reference-images.mjs
+// Keep the original lint script separate; the card runs this suite after it.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';

@@ -28,7 +28,7 @@
     }
   },
   "scripts": {
-    "lint:skills": "node tools/lint-skills.mjs && node --test test/reference-images.mjs",
+    "lint:skills": "node tools/lint-skills.mjs",
     "test": "node --test test/*.mjs"
   },
   "peerDependencies": {
