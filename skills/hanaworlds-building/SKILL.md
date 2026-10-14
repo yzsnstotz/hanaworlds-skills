@@ -111,15 +111,52 @@ example; use the player's actual link):
 {"url":"https://images.example.org/user-provided.png"}
 ```
 
-For material hints from an image, pass only the attachment reference that the image listing or the
+For material selection from an image, pass only the attachment reference that the image listing or the
 download returned; Painter reads the bytes and the current material catalogue itself:
 
 ```json tool=hanaworlds_image_material
 {"attachmentRef":"workshop-current-image"}
 ```
 
-Use the returned material and match as hints, without guessing colours from names. Do not claim to
-see an image when listing, download or decoding failed. If the actual image is missing or unreadable,
+Painter reports the image's dominant colour and the nearest measured legal material using
+CIEDE2000. Read `hanaworlds_image_material.output.dominant.rgb`,
+`hanaworlds_image_material.output.match.algorithm` and
+`hanaworlds_image_material.output.match.distance` from that result; do not estimate colours from
+material names or run your own colour comparison. Explain the reported colour, material and distance
+when discussing the palette. The nearest match is not a guarantee of an exact or identical colour.
+The whole image's dominant colour can come from its background; it does not identify separate wall
+or roof colours or establish any geometry.
+
+When the player requests image-colour matching or leaves material choice to you, choose the returned
+pair: `hanaworlds_image_material.output.material.materialRef` and
+`hanaworlds_image_material.output.material.orientation`. Use that pair unchanged for PER_CELL material
+entries and REGION palette entries, within the actual design and current catalogue. Never decode a
+reference or choose an orientation from memory. If the match conflicts with an explicit requested
+material, do not silently replace that material: explain the conflict and take the agreement path.
+Do not add a colour-distance cutoff or treat an approximate match as permission to change the brief.
+
+Keep the match associated with the current attachment and the returned
+`hanaworlds_image_material.output.image.sha256`, `hanaworlds_image_material.output.connection`,
+`hanaworlds_image_material.output.catalogueDigest` and
+`hanaworlds_image_material.output.sourceRevision`. If the image or attachment changed, the world or
+connection changed, or current tools report a changed catalogue or source revision, discard the old
+match and read fresh facts and request a fresh material match before designing or writing. These
+returned identifiers describe the match's basis; never send them as model-supplied authorization or
+assume an earlier successful match proves that the current world is still usable.
+
+If no usable legal match is available, or image matching is refused, report the returned reason and
+stop before writing. Never invent a substitute material or guess its colour, use an unavailable
+material, or retry an unchanged failed call. Follow the returned remedy or ask the player about an
+alternative; a different material or design needs the agreement path when it changes their request.
+
+Material matching is read-only and grants no intent, placement, safety or affected-object permission.
+An initially clear image request with settled material choice still builds directly under the host's
+normal validation. An unclear request continues through the clarification and proposal path above;
+matching a colour never confirms a pending proposal. Keep all safety checks and affected-object
+notification and confirmation steps below, including refusal when continuing would still overlap
+other objects.
+
+Do not claim to see an image when listing, download or decoding failed. If the actual image is missing or unreadable,
 ask for a usable image attachment and stop visual claims; a known reference, link or colour match
 does not replace visible image content. Report a tool refusal as returned, without inventing a
 description or retrying an unchanged failed call.
