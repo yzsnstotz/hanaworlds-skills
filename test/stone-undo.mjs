@@ -1,8 +1,8 @@
 // skills-07 / J5.S3: SOURCE assertions over the shipped model instructions.
 // This is not a planner, transaction simulator or real-world/model acceptance.
-// Review/implementation command, preserving the original lint:
+// Q-319 official card command, preserving the original lint:
 // npm run lint:skills && node --test test/reference-images.mjs test/lint-skills.mjs test/image-materials.mjs test/lake-methods.mjs test/stone-undo.mjs
-// The card's lint-only command cannot exercise this RED suite; PM must include it.
+// Missing guidance fails this command's test phase; the original lint stays unchanged.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
